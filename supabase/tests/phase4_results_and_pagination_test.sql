@@ -343,6 +343,7 @@ select throws_ok(
     current_setting('test.draw_match')
   ),
   '42501',
+  'new row violates row-level security policy for table "wins"',
   'Addition #4: Direct INSERT into wins by authenticated is blocked by RLS'
 );
 
