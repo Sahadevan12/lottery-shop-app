@@ -71,8 +71,8 @@ begin
   perform save_draw_results_and_check(
     v_draw_past,
     jsonb_build_array(
-      jsonb_build_object('tier_id', v_tier_1, 'winning_series', 'KR', 'winning_number', '200001'),
-      jsonb_build_object('tier_id', v_tier_8, 'winning_series', null, 'winning_number', '009')
+      jsonb_build_object('tier_id', v_tier_1, 'series', 'KR', 'number', '200001'),
+      jsonb_build_object('tier_id', v_tier_8, 'series', null, 'number', '009')
     )
   );
 

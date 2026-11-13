@@ -327,7 +327,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
             children: <Widget>[
               Text(l10n.drawSummaryLabel, style: context.text.h2),
               Text(
-                AppFormatters.shortDate(summary.closedAt),
+                AppFormatters.count(summary.ticketsBought),
                 style: context.text.caption.copyWith(color: colors.inkMuted),
               ),
             ],

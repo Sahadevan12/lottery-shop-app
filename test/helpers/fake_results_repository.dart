@@ -245,16 +245,15 @@ class FakeResultsRepository implements ResultsRepository {
         .fold<int>(0, (int sum, WinningTicket w) => sum + w.prizeAmountPaise);
 
     _summariesByDraw[drawId] = DrawSummaryRecord(
-      id: 'sum-${++_idSeq}',
       shopId: draw.shopId,
       drawId: drawId,
       ticketsBought: tickets.length,
       ticketsSoldCounter: counter,
       ticketsSoldSeller: seller,
       ticketsUnsold: unsold,
+      totalCostPaise: tickets.length * 3500,
       grossRevenuePaise: (counter + seller) * draw.ticketPricePaise,
       totalPrizesWonPaise: totalPrizes,
-      closedAt: DateTime.now().toUtc(),
     );
   }
 }

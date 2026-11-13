@@ -69,7 +69,7 @@ begin
 
   select
     coalesce(count(*), 0)::int,
-    coalesce(sum(w.prize_amount), 0)::numeric(14,2),
+    coalesce(sum(w.amount), 0)::numeric(14,2),
     coalesce(count(*) filter (where w.claim_status = 'UNCLAIMED'), 0)::int
   into
     v_today_wins_count,
@@ -89,7 +89,7 @@ begin
     group by l.seller_id
   ) sb;
 
-  select coalesce(sum(w.prize_amount), 0)::numeric(14,2)
+  select coalesce(sum(w.amount), 0)::numeric(14,2)
   into v_to_recover_from_office
   from wins w
   where w.shop_id = v_shop_id
@@ -180,7 +180,7 @@ begin
     group by l.seller_id
   ) sb;
 
-  select coalesce(sum(w.prize_amount), 0)::numeric(14,2)
+  select coalesce(sum(w.amount), 0)::numeric(14,2)
   into v_total_to_recover_from_office
   from wins w
   where w.shop_id = v_shop_id
@@ -197,8 +197,8 @@ begin
   win_agg as (
     select
       w.draw_id,
-      coalesce(sum(w.prize_amount) filter (where w.sold_by = 'UNSOLD'), 0)::numeric(14,2) as unsold_prize_gain,
-      coalesce(sum(w.prize_amount) filter (where w.claim_status = 'PAID_TO_CUSTOMER'), 0)::numeric(14,2) as to_recover_from_office
+      coalesce(sum(w.amount) filter (where w.sold_by = 'UNSOLD'), 0)::numeric(14,2) as unsold_prize_gain,
+      coalesce(sum(w.amount) filter (where w.claim_status = 'PAID_TO_CUSTOMER'), 0)::numeric(14,2) as to_recover_from_office
     from wins w
     where w.shop_id = v_shop_id
     group by w.draw_id
@@ -226,29 +226,32 @@ begin
       d.status,
       d.ticket_price,
       case
-        when d.status = 'CLOSED' then coalesce(ds.tickets_bought, 0)
+        when d.status = 'CLOSED' then coalesce(ds.total_tickets, 0)
         else coalesce(ota.tickets_bought, 0)
       end as tickets_bought,
       case
-        when d.status = 'CLOSED' then coalesce(ds.tickets_sold_counter, 0)
+        when d.status = 'CLOSED' then coalesce(ds.sold_counter, 0)
         else coalesce(ota.tickets_sold_counter, 0)
       end as tickets_sold_counter,
       case
-        when d.status = 'CLOSED' then coalesce(ds.tickets_sold_seller, 0)
+        when d.status = 'CLOSED' then coalesce(ds.sold_by_sellers, 0)
         else coalesce(ota.tickets_sold_seller, 0)
       end as tickets_sold_seller,
       case
-        when d.status = 'CLOSED' then coalesce(ds.tickets_unsold, 0)
+        when d.status = 'CLOSED' then coalesce(ds.returned_unsold, 0)
         else coalesce(ota.tickets_unsold, 0)
       end as tickets_unsold,
       case
-        when d.status = 'CLOSED' then coalesce(ds.gross_revenue, 0)::numeric(14,2)
+        when d.status = 'CLOSED' then coalesce(ds.total_sales, 0)::numeric(14,2)
         else (
           (coalesce(ota.tickets_sold_counter, 0) + coalesce(ota.tickets_sold_seller, 0))
           * d.ticket_price
         )::numeric(14,2)
       end as sales,
-      coalesce(bc.stock_cost, 0)::numeric(14,2) as stock_cost,
+      case
+        when d.status = 'CLOSED' then coalesce(ds.total_cost, 0)::numeric(14,2)
+        else coalesce(bc.stock_cost, 0)::numeric(14,2)
+      end as stock_cost,
       coalesce(wa.unsold_prize_gain, 0)::numeric(14,2) as unsold_prize_gain,
       coalesce(wa.to_recover_from_office, 0)::numeric(14,2) as to_recover_from_office
     from draws d

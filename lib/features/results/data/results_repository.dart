@@ -66,7 +66,8 @@ class SupabaseResultsRepository implements ResultsRepository {
         .from('draw_results')
         .select()
         .eq('draw_id', drawId)
-        .order('created_at', ascending: true);
+        .order('series', ascending: true)
+        .order('number', ascending: true);
 
     return rows
         .map((dynamic e) => DrawResultEntry.fromJson(e as Map<String, dynamic>))
@@ -82,13 +83,13 @@ class SupabaseResultsRepository implements ResultsRepository {
     final List<dynamic> rows = await _client
         .from('wins')
         .select(
-          '*, tickets!inner(series, number), '
-          'draw_prize_tiers!inner(label, tier_order), '
+          '*, draw_prize_tiers!inner(label, tier_order), '
           'sellers(name)',
         )
         .eq('draw_id', drawId)
-        .order('prize_amount', ascending: false)
-        .order('created_at', ascending: true)
+        .order('amount', ascending: false)
+        .order('series', ascending: true)
+        .order('number', ascending: true)
         .range(offset, offset + limit - 1);
 
     return rows
@@ -105,12 +106,11 @@ class SupabaseResultsRepository implements ResultsRepository {
     final List<dynamic> rows = await _client
         .from('wins')
         .select(
-          '*, tickets!inner(series, number), '
-          'draw_prize_tiers!inner(label, tier_order), '
+          '*, draw_prize_tiers!inner(label, tier_order), '
           'sellers(name)',
         )
         .eq('seller_id', sellerId)
-        .order('created_at', ascending: false)
+        .order('amount', ascending: false)
         .range(offset, offset + limit - 1);
 
     return rows

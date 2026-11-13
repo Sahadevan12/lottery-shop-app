@@ -87,8 +87,8 @@ class DrawResultEntry {
       id: json['id'] as String,
       drawId: json['draw_id'] as String,
       tierId: json['tier_id'] as String,
-      winningSeries: json['winning_series'] as String?,
-      winningNumber: json['winning_number'] as String,
+      winningSeries: json['series'] as String?,
+      winningNumber: json['number'] as String,
     );
   }
 }
@@ -108,8 +108,8 @@ class ResultEntryInput {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'tier_id': tierId,
-      'winning_series': winningSeries,
-      'winning_number': winningNumber,
+      'series': winningSeries,
+      'number': winningNumber,
     };
   }
 }
@@ -182,8 +182,6 @@ class WinningTicket {
   }
 
   factory WinningTicket.fromJson(Map<String, dynamic> json) {
-    final Map<String, dynamic>? ticketMap =
-        json['tickets'] as Map<String, dynamic>?;
     final Map<String, dynamic>? tierMap =
         json['draw_prize_tiers'] as Map<String, dynamic>?;
     final Map<String, dynamic>? sellerMap =
@@ -193,17 +191,17 @@ class WinningTicket {
       id: json['id'] as String,
       shopId: json['shop_id'] as String,
       drawId: json['draw_id'] as String,
-      ticketId: json['ticket_id'] as String,
+      ticketId: (json['ticket_id'] as String?) ?? '',
       tierId: json['tier_id'] as String,
       prizeAmountPaise: AppFormatters.parseNumericToPaise(
-        json['prize_amount'] ?? 0,
+        json['amount'] ?? 0,
       ),
       soldBy: WinSoldBy.fromDb(json['sold_by'] as String),
       sellerId: json['seller_id'] as String?,
       claimStatus: WinClaimStatus.fromDb(json['claim_status'] as String),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      ticketSeries: (ticketMap?['series'] as String?) ?? '',
-      ticketNumber: (ticketMap?['number'] as String?) ?? '',
+      createdAt: DateTime.now().toUtc(),
+      ticketSeries: (json['series'] as String?) ?? '',
+      ticketNumber: ((json['number'] as String?) ?? '').trim(),
       tierLabel: (tierMap?['label'] as String?) ?? '',
       tierOrder: (tierMap?['tier_order'] as num?)?.toInt() ?? 0,
       sellerName: sellerMap?['name'] as String?,
@@ -214,45 +212,44 @@ class WinningTicket {
 @immutable
 class DrawSummaryRecord {
   const DrawSummaryRecord({
-    required this.id,
     required this.shopId,
     required this.drawId,
     required this.ticketsBought,
     required this.ticketsSoldCounter,
     required this.ticketsSoldSeller,
     required this.ticketsUnsold,
+    required this.totalCostPaise,
     required this.grossRevenuePaise,
     required this.totalPrizesWonPaise,
-    required this.closedAt,
   });
 
-  final String id;
   final String shopId;
   final String drawId;
   final int ticketsBought;
   final int ticketsSoldCounter;
   final int ticketsSoldSeller;
   final int ticketsUnsold;
+  final int totalCostPaise;
   final int grossRevenuePaise;
   final int totalPrizesWonPaise;
-  final DateTime closedAt;
 
   factory DrawSummaryRecord.fromJson(Map<String, dynamic> json) {
     return DrawSummaryRecord(
-      id: json['id'] as String,
       shopId: json['shop_id'] as String,
       drawId: json['draw_id'] as String,
-      ticketsBought: (json['tickets_bought'] as num).toInt(),
-      ticketsSoldCounter: (json['tickets_sold_counter'] as num).toInt(),
-      ticketsSoldSeller: (json['tickets_sold_seller'] as num).toInt(),
-      ticketsUnsold: (json['tickets_unsold'] as num).toInt(),
+      ticketsBought: (json['total_tickets'] as num).toInt(),
+      ticketsSoldCounter: (json['sold_counter'] as num).toInt(),
+      ticketsSoldSeller: (json['sold_by_sellers'] as num).toInt(),
+      ticketsUnsold: (json['returned_unsold'] as num).toInt(),
+      totalCostPaise: AppFormatters.parseNumericToPaise(
+        json['total_cost'] ?? 0,
+      ),
       grossRevenuePaise: AppFormatters.parseNumericToPaise(
-        json['gross_revenue'] ?? 0,
+        json['total_sales'] ?? 0,
       ),
       totalPrizesWonPaise: AppFormatters.parseNumericToPaise(
-        json['total_prizes_won'] ?? 0,
+        json['total_prizes'] ?? 0,
       ),
-      closedAt: DateTime.parse(json['closed_at'] as String),
     );
   }
 }
