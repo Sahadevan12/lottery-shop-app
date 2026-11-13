@@ -59,7 +59,7 @@ begin
   -- Add batches across series KR, WN, KN
   perform create_stock_batch(v_draw_match, 'KR', '482901', '482920', 35.00);
   perform create_stock_batch(v_draw_match, 'WN', '482901', '482905', 35.00);
-  perform create_stock_batch(v_draw_match, 'WN', '100915', '100916', 35.00);
+  perform create_stock_batch(v_draw_match, 'WN', '100998', '100999', 35.00);
   perform create_stock_batch(v_draw_match, 'KR', '555555', '555555', 35.00);
 
   -- Mark KR 482901 as SOLD_COUNTER
@@ -144,7 +144,7 @@ begin
     jsonb_build_object('tier_id', v_t3, 'series', 'KN', 'number', '555555'),
     jsonb_build_object('tier_id', v_t4, 'number', '2901'),
     jsonb_build_object('tier_id', v_t4, 'number', '2910'),
-    jsonb_build_object('tier_id', v_t9, 'number', '915')
+    jsonb_build_object('tier_id', v_t9, 'number', '999')
   );
 
   v_wins_count := save_draw_results_and_check(v_draw_id, v_entries, false);
@@ -200,14 +200,14 @@ select is(
   'Case 7b: WITH_SELLER winning ticket maps to sold_by = SELLER'
 );
 
--- 12. Case 5: WN 100915 matches LAST_3 '915' (100.00)
+-- 12. Case 5: WN 100999 matches LAST_3 '999' (100.00)
 select is(
-  (select amount from wins where draw_id = current_setting('test.draw_match')::uuid and series = 'WN' and number = '100915'),
+  (select amount from wins where draw_id = current_setting('test.draw_match')::uuid and series = 'WN' and number = '100999'),
   100.00::numeric(12,2),
-  'Case 5: WN 100915 matches LAST_3 tier'
+  'Case 5: WN 100999 matches LAST_3 tier'
 );
 
--- 13. Case 8: Non-matching tickets produce no win rows (total wins = 4: KR 482901, WN 482901, KR 482910, WN 100915)
+-- 13. Case 8: Non-matching tickets produce no win rows (total wins = 4: KR 482901, WN 482901, KR 482910, WN 100999)
 select is(
   current_setting('test.wins_count')::int,
   4,
@@ -311,6 +311,7 @@ select throws_ok(
         false
       )
     $q$,
+    current_setting('test.draw_match'),
     current_setting('test.draw_match'),
     current_setting('test.draw_match')
   ),

@@ -72,6 +72,8 @@ select
   400.00
 from shops where owner_id = '22222222-2222-2222-2222-222222222222';
 
+-- Seed wins row as postgres (since authenticated has SELECT-only RLS on wins)
+set local role postgres;
 insert into wins (id, shop_id, draw_id, ticket_id, series, number, sold_by, tier_id, amount)
 select
   'b0000000-0000-0000-0000-000000000007',
@@ -84,6 +86,7 @@ select
   'b0000000-0000-0000-0000-000000000003',
   7500000.00
 from shops where owner_id = '22222222-2222-2222-2222-222222222222';
+set local role authenticated;
 
 -- ============================================================================
 -- Switch to User A ('11111111-1111-1111-1111-111111111111')
