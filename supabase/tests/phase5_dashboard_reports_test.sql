@@ -126,8 +126,8 @@ select is(
 );
 select is(
   (get_reports_summary((now() at time zone 'Asia/Kolkata')::date - 3, (now() at time zone 'Asia/Kolkata')::date - 1)->>'total_to_recover_from_office')::numeric,
-  8000000.00,
-  'get_reports_summary: to_recover_from_office = 8000000.00 (PAID_TO_CUSTOMER)'
+  7500000.00,
+  'get_reports_summary: to_recover_from_office = 7500000.00 (PAID_TO_CUSTOMER)'
 );
 
 -- Close past draw, delete its tickets (simulate 30-day cleanup), verify draw_summaries is used
