@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucky_ledger/app/main_shell_screen.dart';
 import 'package:lucky_ledger/core/theme/app_theme.dart';
 import 'package:lucky_ledger/features/auth/presentation/auth_controller.dart';
+import 'package:lucky_ledger/features/home/presentation/home_controller.dart';
 import 'package:lucky_ledger/features/sellers/presentation/sellers_controller.dart';
 import 'package:lucky_ledger/features/settings/presentation/app_preferences_controller.dart';
 import 'package:lucky_ledger/features/stock/domain/stock_entities.dart';
@@ -15,6 +16,7 @@ import 'package:lucky_ledger/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../helpers/fake_home_reports_repository.dart';
 import '../../helpers/fake_repositories.dart';
 import '../../helpers/fake_seller_repository.dart';
 
@@ -231,6 +233,9 @@ void main() {
               sharedPreferencesProvider.overrideWithValue(prefs),
               authRepositoryProvider.overrideWithValue(fakeAuth),
               stockRepositoryProvider.overrideWithValue(fakeStock),
+              homeRepositoryProvider.overrideWithValue(
+                FakeHomeRepository.fromStock(fakeStock),
+              ),
               sellerRepositoryProvider.overrideWithValue(
                 FakeSellerRepository(fakeStock),
               ),

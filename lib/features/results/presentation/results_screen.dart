@@ -301,11 +301,10 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
               );
             }
           },
-          onSharePoster: () => WinnerPosterShare.sharePoster(
+          onSharePoster: () => WinnerPosterSheet.show(
             context: context,
             draw: draw,
             wins: wins,
-            l10n: l10n,
           ),
         ),
       ],

@@ -1080,4 +1080,128 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get errorInvalidClaimStatus => 'இந்த டிக்கெட்டுக்கு தவறான பரிசு நிலை.';
+
+  @override
+  String get errorRangeTooLarge =>
+      'தேதி வரம்பு 366 நாட்களுக்கு மேல் இருக்கக்கூடாது.';
+
+  @override
+  String todayWinsBannerTitle(String count, String amount) {
+    return 'இன்று $count வெற்றிகள் ($amount)';
+  }
+
+  @override
+  String unclaimedWinsCountLabel(String count) {
+    return '$count கோரப்படாதது';
+  }
+
+  @override
+  String get toRecoverOfficeLabel => 'அலுவலகத்திலிருந்து பெற வேண்டியது';
+
+  @override
+  String get viewReportsAction => 'அறிக்கைகள் & லாபநஷ்டம்';
+
+  @override
+  String get reportsTitle => 'அறிக்கைகள் & லாபநஷ்டம்';
+
+  @override
+  String get reportsPeriodToday => 'இன்று';
+
+  @override
+  String get reportsPeriodWeek => 'இந்த வாரம்';
+
+  @override
+  String get reportsPeriodMonth => 'இந்த மாதம்';
+
+  @override
+  String get reportsPeriod30Days => '30 நாட்கள்';
+
+  @override
+  String get reportsEmptyTitle => 'இந்தக் காலத்தில் குலுக்கல்கள் இல்லை';
+
+  @override
+  String get reportsEmptySubtitle => 'லாபநஷ்டத்தைக் காண தேதி வரம்பை மாற்றவும்.';
+
+  @override
+  String get pnlSalesLabel => 'மொத்த விற்பனை';
+
+  @override
+  String get pnlStockCostLabel => 'இருப்புச் செலவு';
+
+  @override
+  String get pnlGrossMarginLabel => 'மொத்த லாப வரம்பு';
+
+  @override
+  String get pnlUnsoldGainLabel => 'விற்கப்படாத டிக்கெட் பரிசு லாபம்';
+
+  @override
+  String get pnlNetProfitLabel => 'நிகர லாபம்';
+
+  @override
+  String get pnlToRecoverOfficeLabel =>
+      'லாட்டரி அலுவலகத்திலிருந்து பெற வேண்டியது';
+
+  @override
+  String get pnlToCollectSellersLabel =>
+      'விற்பனையாளர்களிடமிருந்து வசூலிக்க வேண்டியது';
+
+  @override
+  String get pnlDrawBreakdownTitle => 'குலுக்கல் வாரியான கணக்கு';
+
+  @override
+  String get pnlTapToExplainHint => 'சூத்திரத்தைக் காண தொகையைத் தட்டவும்';
+
+  @override
+  String pnlFormulaSales(
+      String sold, String price, String counter, String seller) {
+    return 'விற்ற டிக்கெட்டுகள் ($sold × $price) = கவுண்டர் ($counter) + விற்பனையாளர்கள் ($seller)';
+  }
+
+  @override
+  String pnlFormulaStockCost(String bought) {
+    return 'வாங்கிய மொத்த டிக்கெட்டுகள் ($bought) × டிக்கெட் விலை';
+  }
+
+  @override
+  String get pnlFormulaGrossMargin => 'விற்பனை − இருப்புச் செலவு';
+
+  @override
+  String get pnlFormulaUnsoldGain =>
+      'விற்கப்படாத டிக்கெட்டுகளின் பரிசு (உரிமையாளர் பெறுவது)';
+
+  @override
+  String get pnlFormulaNetProfit =>
+      'மொத்த லாப வரம்பு + விற்கப்படாத பரிசு லாபம்';
+
+  @override
+  String get pnlFormulaRecoverOffice =>
+      'வாடிக்கையாளருக்கு வழங்கிய ஆனால் அலுவலகத்திலிருந்து பெறாத பரிசுகள்';
+
+  @override
+  String get pnlFormulaCollectSellers =>
+      'அனைத்து விற்பனையாளர்களின் தற்போதைய நிலுவைத் தொகை';
+
+  @override
+  String get exportPdfReportAction => 'PDF அறிக்கை ஏற்றுமதி';
+
+  @override
+  String get posterTemplateLabel => 'வடிவமைப்பு';
+
+  @override
+  String get posterTemplateClassic => 'கிளாசிக் கோல்ட்';
+
+  @override
+  String get posterTemplateEmerald => 'எமரால்டு';
+
+  @override
+  String get posterTemplateFestive => 'விழா பேனர்';
+
+  @override
+  String get posterLanguageLabel => 'போஸ்டர் மொழி';
+
+  @override
+  String get posterMaskNumbersLabel => 'டிக்கெட் எண்ணை மறை (எ.கா. KR 48****)';
+
+  @override
+  String get posterShareNowAction => '1080×1350 PNG பகிர்';
 }

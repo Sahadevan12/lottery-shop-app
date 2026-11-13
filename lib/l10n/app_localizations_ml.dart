@@ -1076,4 +1076,126 @@ class AppLocalizationsMl extends AppLocalizations {
   @override
   String get errorInvalidClaimStatus =>
       'ഈ ടിക്കറ്റിന് അസാധുവായ ക്ലെയിം സ്റ്റാറ്റസ്.';
+
+  @override
+  String get errorRangeTooLarge => 'തീയതി പരിധി 366 ദിവസത്തിൽ കൂടാൻ പാടില്ല.';
+
+  @override
+  String todayWinsBannerTitle(String count, String amount) {
+    return 'ഇന്ന് $count സമ്മാനങ്ങൾ ($amount)';
+  }
+
+  @override
+  String unclaimedWinsCountLabel(String count) {
+    return '$count ക്ലെയിം ചെയ്യാത്തത്';
+  }
+
+  @override
+  String get toRecoverOfficeLabel => 'ലോട്ടറി ഓഫീസിൽ നിന്ന് ലഭിക്കാനുള്ളത്';
+
+  @override
+  String get viewReportsAction => 'റിപ്പോർട്ടുകളും ലാഭനഷ്ടവും';
+
+  @override
+  String get reportsTitle => 'റിപ്പോർട്ടുകളും ലാഭനഷ്ടവും';
+
+  @override
+  String get reportsPeriodToday => 'ഇന്ന്';
+
+  @override
+  String get reportsPeriodWeek => 'ഈ ആഴ്ച';
+
+  @override
+  String get reportsPeriodMonth => 'ഈ മാസം';
+
+  @override
+  String get reportsPeriod30Days => '30 ദിവസം';
+
+  @override
+  String get reportsEmptyTitle => 'ഈ കാലയളവിൽ നറുക്കെടുപ്പുകളില്ല';
+
+  @override
+  String get reportsEmptySubtitle => 'ലാഭനഷ്ടം കാണാൻ തീയതി പരിധി മാറ്റുക.';
+
+  @override
+  String get pnlSalesLabel => 'ആകെ വിൽപ്പന';
+
+  @override
+  String get pnlStockCostLabel => 'സ്റ്റോക്ക് ചെലവ്';
+
+  @override
+  String get pnlGrossMarginLabel => 'മൊത്തം മാർജിൻ';
+
+  @override
+  String get pnlUnsoldGainLabel => 'വിറ്റുപോകാത്ത ടിക്കറ്റ് സമ്മാന ലാഭം';
+
+  @override
+  String get pnlNetProfitLabel => 'അറ്റാദായം';
+
+  @override
+  String get pnlToRecoverOfficeLabel => 'ലോട്ടറി ഓഫീസിൽ നിന്ന് ലഭിക്കാനുള്ളത്';
+
+  @override
+  String get pnlToCollectSellersLabel =>
+      'വിൽപ്പനക്കാരിൽ നിന്ന് പിരിക്കാനുള്ളത്';
+
+  @override
+  String get pnlDrawBreakdownTitle => 'നറുക്കെടുപ്പ് തിരിച്ചുള്ള കണക്ക്';
+
+  @override
+  String get pnlTapToExplainHint => 'സൂത്രവാക്യം കാണാൻ തുകയിൽ ടാപ്പ് ചെയ്യുക';
+
+  @override
+  String pnlFormulaSales(
+      String sold, String price, String counter, String seller) {
+    return 'വിറ്റ ടിക്കറ്റുകൾ ($sold × $price) = കൗണ്ടർ ($counter) + വിൽപ്പനക്കാർ ($seller)';
+  }
+
+  @override
+  String pnlFormulaStockCost(String bought) {
+    return 'വാങ്ങിയ ആകെ ടിക്കറ്റുകൾ ($bought) × ടിക്കറ്റ് വില';
+  }
+
+  @override
+  String get pnlFormulaGrossMargin => 'വിൽപ്പന − സ്റ്റോക്ക് ചെലവ്';
+
+  @override
+  String get pnlFormulaUnsoldGain =>
+      'വിറ്റുപോകാത്ത ടിക്കറ്റുകൾക്ക് ലഭിച്ച സമ്മാനം (ഉടമയ്ക്ക് ലഭിക്കുന്നത്)';
+
+  @override
+  String get pnlFormulaNetProfit => 'മൊത്തം മാർജിൻ + വിറ്റുപോകാത്ത സമ്മാന ലാഭം';
+
+  @override
+  String get pnlFormulaRecoverOffice =>
+      'കസ്റ്റമർക്ക് നൽകിയതും ഓഫീസിൽ നിന്ന് വാങ്ങാത്തതുമായ സമ്മാനങ്ങൾ';
+
+  @override
+  String get pnlFormulaCollectSellers =>
+      'എല്ലാ വിൽപ്പനക്കാരിൽ നിന്നും ലഭിക്കാനുള്ള ബാക്കി തുക';
+
+  @override
+  String get exportPdfReportAction => 'PDF റിപ്പോർട്ട് എക്സ്പോർട്ട് ചെയ്യുക';
+
+  @override
+  String get posterTemplateLabel => 'ടെംപ്ലേറ്റ്';
+
+  @override
+  String get posterTemplateClassic => 'ക്ലാസിക് ഗോൾഡ്';
+
+  @override
+  String get posterTemplateEmerald => 'എമറാൾഡ്';
+
+  @override
+  String get posterTemplateFestive => 'ഫെസ്റ്റിവ് ബാനർ';
+
+  @override
+  String get posterLanguageLabel => 'പോസ്റ്റർ ഭാഷ';
+
+  @override
+  String get posterMaskNumbersLabel =>
+      'ടിക്കറ്റ് നമ്പർ മറയ്ക്കുക (ഉദാ. KR 48****)';
+
+  @override
+  String get posterShareNowAction => '1080×1350 PNG ഷെയർ ചെയ്യുക';
 }

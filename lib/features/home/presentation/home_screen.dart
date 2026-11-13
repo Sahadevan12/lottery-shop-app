@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/supabase/rpc_error_mapper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
@@ -14,8 +15,8 @@ import '../../sellers/domain/seller_entities.dart';
 import '../../sellers/presentation/give_tickets_sheet.dart';
 import '../../sellers/presentation/record_payment_sheet.dart';
 import '../../sellers/presentation/sellers_controller.dart';
-import '../../stock/domain/stock_entities.dart';
-import '../../stock/presentation/stock_controller.dart';
+import '../data/home_repository.dart';
+import 'home_controller.dart';
 
 /// Home Screen — Tab 1 (§8.2).
 /// Displays greeting, sync pill, shop name, live 2×2 StatTiles, quick actions,
@@ -25,10 +26,12 @@ class HomeScreen extends ConsumerWidget {
     super.key,
     required this.onGoToStock,
     this.onGoToSellers,
+    this.onGoToResults,
   });
 
   final VoidCallback onGoToStock;
   final VoidCallback? onGoToSellers;
+  final VoidCallback? onGoToResults;
 
   String _greeting(AppLocalizations l10n, String ownerName) {
     final int hour = DateTime.now().hour;
@@ -47,26 +50,28 @@ class HomeScreen extends ConsumerWidget {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final AppColors colors = context.colors;
     final ShopProfile? shop = ref.watch(authControllerProvider).shop;
-    final StockState stockState = ref.watch(stockControllerProvider);
+    final HomeState homeState = ref.watch(homeControllerProvider);
+    final DashboardTodayData? dashboard = homeState.dashboard;
     final SellersState sellersState = ref.watch(sellersControllerProvider);
-    final DrawStockSummary todaySummary =
-        stockState.summaryForDate(DateTime.now());
 
     final String ownerName = shop?.ownerName ?? '';
     final String shopName = shop?.name ?? l10n.appName;
-    final int totalDueRupees = sellersState.totalDueFromSellersPaise ~/ 100;
+    final int totalDueRupees =
+        dashboard != null ? dashboard.totalDueFromSellers.round() : 0;
     final List<SellerSummary> topDue = sellersState.topDueSellers;
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screenHorizontal,
-            AppSpacing.lg,
-            AppSpacing.screenHorizontal,
-            AppSpacing.xxl,
-          ),
-          children: <Widget>[
+        child: RefreshIndicator(
+          onRefresh: () => ref.read(homeControllerProvider.notifier).refresh(),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenHorizontal,
+              AppSpacing.lg,
+              AppSpacing.screenHorizontal,
+              AppSpacing.xxl,
+            ),
+            children: <Widget>[
             // Top Header: Greeting + Shop Name + Sync Pill
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,13 +102,145 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            // 2×2 StatTiles Grid (§8.2) — connected to today's draw stock & sellers due
+            if (dashboard == null) ...<Widget>[
+              if (homeState.isLoading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else
+                AppCard(
+                  backgroundColor: colors.danger.withValues(alpha: 0.08),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Text(
+                        homeState.error != null
+                            ? RpcErrorMapper.toLocalizedMessage(
+                                homeState.error!,
+                                l10n,
+                              )
+                            : l10n.errorGeneric,
+                        style: context.text.body.copyWith(color: colors.danger),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppButton(
+                        label: l10n.retryAction,
+                        variant: AppButtonVariant.secondary,
+                        onPressed: () =>
+                            ref.read(homeControllerProvider.notifier).refresh(),
+                      ),
+                    ],
+                  ),
+                ),
+            ] else ...<Widget>[
+              if (homeState.error != null) ...<Widget>[
+                AppCard(
+                  backgroundColor: colors.danger.withValues(alpha: 0.08),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          RpcErrorMapper.toLocalizedMessage(
+                            homeState.error!,
+                            l10n,
+                          ),
+                          style:
+                              context.text.caption.copyWith(color: colors.danger),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            ref.read(homeControllerProvider.notifier).refresh(),
+                        child: Text(l10n.retryAction),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
+              if (dashboard.todayWinsCount > 0) ...<Widget>[
+              AppCard(
+                onTap: onGoToResults,
+                backgroundColor: colors.gold.withValues(alpha: 0.14),
+                child: Row(
+                  children: <Widget>[
+                    Icon(Icons.emoji_events_rounded, color: colors.gold),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            l10n.todayWinsBannerTitle(
+                              AppFormatters.count(dashboard.todayWinsCount),
+                              AppFormatters.moneyFromRupees(
+                                dashboard.todayPrizesTotal.round(),
+                              ),
+                            ),
+                            style: context.text.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if (dashboard.unclaimedWinsCount > 0)
+                            Text(
+                              l10n.unclaimedWinsCountLabel(
+                                AppFormatters.count(
+                                  dashboard.unclaimedWinsCount,
+                                ),
+                              ),
+                              style: context.text.caption.copyWith(
+                                color: colors.inkMuted,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            if (dashboard.toRecoverFromOffice > 0) ...<Widget>[
+              AppCard(
+                onTap: () => context.push('/reports'),
+                child: Row(
+                  children: <Widget>[
+                    Icon(
+                      Icons.account_balance_outlined,
+                      color: colors.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        l10n.toRecoverOfficeLabel,
+                        style: context.text.bodyMedium,
+                      ),
+                    ),
+                    Text(
+                      AppFormatters.moneyFromRupees(
+                        dashboard.toRecoverFromOffice.round(),
+                      ),
+                      style: context.text.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+
+            // 2×2 StatTiles Grid (§8.2) — connected to dashboard_today() RPC
             Row(
               children: <Widget>[
                 Expanded(
                   child: StatTile(
                     label: l10n.statInStock,
-                    numericValue: todaySummary.inStock,
+                    numericValue: dashboard.inStockCount,
                     onTap: onGoToStock,
                   ),
                 ),
@@ -111,7 +248,7 @@ class HomeScreen extends ConsumerWidget {
                 Expanded(
                   child: StatTile(
                     label: l10n.statWithSellers,
-                    numericValue: todaySummary.withSellers,
+                    numericValue: dashboard.withSellerCount,
                     onTap: onGoToSellers ?? onGoToStock,
                   ),
                 ),
@@ -123,7 +260,7 @@ class HomeScreen extends ConsumerWidget {
                 Expanded(
                   child: StatTile(
                     label: l10n.statSoldToday,
-                    numericValue: todaySummary.sold,
+                    numericValue: dashboard.soldCount,
                     onTap: onGoToStock,
                   ),
                 ),
@@ -168,8 +305,15 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.md),
             ],
+            AppButton(
+              label: l10n.viewReportsAction,
+              variant: AppButtonVariant.secondary,
+              leadingIcon: Icons.analytics_outlined,
+              onPressed: () => context.push('/reports'),
+            ),
+            const SizedBox(height: AppSpacing.xl),
 
             // Top Sellers by Due (§8.2)
             if (topDue.isNotEmpty) ...<Widget>[
@@ -219,7 +363,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
               ],
-            ] else if (todaySummary.total == 0)
+            ] else if (dashboard.totalTickets == 0)
               AppCard(
                 child: EmptyState(
                   title: l10n.homeEmptyTitle,
@@ -229,7 +373,9 @@ class HomeScreen extends ConsumerWidget {
                   icon: Icons.inventory_2_outlined,
                 ),
               ),
+            ],
           ],
+        ),
         ),
       ),
     );

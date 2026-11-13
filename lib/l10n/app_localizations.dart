@@ -2055,6 +2055,223 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invalid claim status for this ticket.'**
   String get errorInvalidClaimStatus;
+
+  /// No description provided for @errorRangeTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Date range cannot exceed 366 days.'**
+  String get errorRangeTooLarge;
+
+  /// No description provided for @todayWinsBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} wins today ({amount})'**
+  String todayWinsBannerTitle(String count, String amount);
+
+  /// No description provided for @unclaimedWinsCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unclaimed'**
+  String unclaimedWinsCountLabel(String count);
+
+  /// No description provided for @toRecoverOfficeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'To recover from office'**
+  String get toRecoverOfficeLabel;
+
+  /// No description provided for @viewReportsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports & P&L'**
+  String get viewReportsAction;
+
+  /// No description provided for @reportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports & P&L'**
+  String get reportsTitle;
+
+  /// No description provided for @reportsPeriodToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get reportsPeriodToday;
+
+  /// No description provided for @reportsPeriodWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get reportsPeriodWeek;
+
+  /// No description provided for @reportsPeriodMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get reportsPeriodMonth;
+
+  /// No description provided for @reportsPeriod30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'30 days'**
+  String get reportsPeriod30Days;
+
+  /// No description provided for @reportsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No draws in this period'**
+  String get reportsEmptyTitle;
+
+  /// No description provided for @reportsEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create draws or adjust the date range to view P&L.'**
+  String get reportsEmptySubtitle;
+
+  /// No description provided for @pnlSalesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total sales'**
+  String get pnlSalesLabel;
+
+  /// No description provided for @pnlStockCostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock cost'**
+  String get pnlStockCostLabel;
+
+  /// No description provided for @pnlGrossMarginLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross margin'**
+  String get pnlGrossMarginLabel;
+
+  /// No description provided for @pnlUnsoldGainLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsold prize gain'**
+  String get pnlUnsoldGainLabel;
+
+  /// No description provided for @pnlNetProfitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Net profit'**
+  String get pnlNetProfitLabel;
+
+  /// No description provided for @pnlToRecoverOfficeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'To recover from lottery office'**
+  String get pnlToRecoverOfficeLabel;
+
+  /// No description provided for @pnlToCollectSellersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'To collect from sellers'**
+  String get pnlToCollectSellersLabel;
+
+  /// No description provided for @pnlDrawBreakdownTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw-wise P&L'**
+  String get pnlDrawBreakdownTitle;
+
+  /// No description provided for @pnlTapToExplainHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap any figure to see its formula'**
+  String get pnlTapToExplainHint;
+
+  /// No description provided for @pnlFormulaSales.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold tickets ({sold} × {price}) = Counter ({counter}) + Sellers ({seller})'**
+  String pnlFormulaSales(
+      String sold, String price, String counter, String seller);
+
+  /// No description provided for @pnlFormulaStockCost.
+  ///
+  /// In en, this message translates to:
+  /// **'All tickets bought ({bought}) × cost per ticket'**
+  String pnlFormulaStockCost(String bought);
+
+  /// No description provided for @pnlFormulaGrossMargin.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales − Stock cost'**
+  String get pnlFormulaGrossMargin;
+
+  /// No description provided for @pnlFormulaUnsoldGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Prizes won by UNSOLD tickets (claimed by owner)'**
+  String get pnlFormulaUnsoldGain;
+
+  /// No description provided for @pnlFormulaNetProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross margin + Unsold prize gain (customer prizes are paid by the Lottery Dept)'**
+  String get pnlFormulaNetProfit;
+
+  /// No description provided for @pnlFormulaRecoverOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'Wins marked \'Paid to customer\' not yet \'Claimed from office\''**
+  String get pnlFormulaRecoverOffice;
+
+  /// No description provided for @pnlFormulaCollectSellers.
+  ///
+  /// In en, this message translates to:
+  /// **'Current net dues owed by all sellers'**
+  String get pnlFormulaCollectSellers;
+
+  /// No description provided for @exportPdfReportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Export PDF report'**
+  String get exportPdfReportAction;
+
+  /// No description provided for @posterTemplateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Template'**
+  String get posterTemplateLabel;
+
+  /// No description provided for @posterTemplateClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic Gold'**
+  String get posterTemplateClassic;
+
+  /// No description provided for @posterTemplateEmerald.
+  ///
+  /// In en, this message translates to:
+  /// **'Calm Emerald'**
+  String get posterTemplateEmerald;
+
+  /// No description provided for @posterTemplateFestive.
+  ///
+  /// In en, this message translates to:
+  /// **'Festive Banner'**
+  String get posterTemplateFestive;
+
+  /// No description provided for @posterLanguageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Poster language'**
+  String get posterLanguageLabel;
+
+  /// No description provided for @posterMaskNumbersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mask ticket numbers (e.g. KR 48****)'**
+  String get posterMaskNumbersLabel;
+
+  /// No description provided for @posterShareNowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Share 1080×1350 PNG'**
+  String get posterShareNowAction;
 }
 
 class _AppLocalizationsDelegate

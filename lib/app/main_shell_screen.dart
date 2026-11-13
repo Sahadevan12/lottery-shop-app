@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/theme/app_theme.dart';
+import '../features/home/presentation/home_controller.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/results/presentation/results_screen.dart';
 import '../features/sellers/presentation/sellers_screen.dart';
@@ -13,14 +15,14 @@ import '../l10n/app_localizations.dart';
 
 /// 5-Tab Bottom Navigation Shell (§4.7 #2).
 /// Tabs: Home, Stock, Sellers, Results, More. Icons + labels always visible.
-class MainShellScreen extends StatefulWidget {
+class MainShellScreen extends ConsumerStatefulWidget {
   const MainShellScreen({super.key});
 
   @override
-  State<MainShellScreen> createState() => _MainShellScreenState();
+  ConsumerState<MainShellScreen> createState() => _MainShellScreenState();
 }
 
-class _MainShellScreenState extends State<MainShellScreen> {
+class _MainShellScreenState extends ConsumerState<MainShellScreen> {
   int _currentIndex = 0;
 
   void _selectTab(int index) {
@@ -29,6 +31,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
     }
     HapticFeedback.selectionClick();
     setState(() => _currentIndex = index);
+    if (index == 0) {
+      ref.read(homeControllerProvider.notifier).refresh();
+    }
   }
 
   @override
@@ -40,6 +45,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
       HomeScreen(
         onGoToStock: () => _selectTab(1),
         onGoToSellers: () => _selectTab(2),
+        onGoToResults: () => _selectTab(3),
       ),
       const StockScreen(),
       const SellersScreen(),

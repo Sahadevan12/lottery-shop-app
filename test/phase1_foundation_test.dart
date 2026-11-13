@@ -8,12 +8,14 @@ import 'package:lucky_ledger/core/ui/seller_avatar.dart';
 import 'package:lucky_ledger/core/utils/formatters.dart';
 import 'package:lucky_ledger/core/utils/validators.dart';
 import 'package:lucky_ledger/features/auth/presentation/auth_controller.dart';
+import 'package:lucky_ledger/features/home/presentation/home_controller.dart';
 import 'package:lucky_ledger/features/settings/presentation/app_preferences_controller.dart';
 import 'package:lucky_ledger/features/settings/presentation/design_preview_screen.dart';
 import 'package:lucky_ledger/features/stock/presentation/stock_controller.dart';
 import 'package:lucky_ledger/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/fake_home_reports_repository.dart';
 import 'helpers/fake_repositories.dart';
 
 void main() {
@@ -76,6 +78,7 @@ void main() {
               sharedPreferencesProvider.overrideWithValue(prefs),
               authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
               stockRepositoryProvider.overrideWithValue(FakeStockRepository()),
+              homeRepositoryProvider.overrideWithValue(FakeHomeRepository()),
             ],
             child: const LuckyLedgerApp(),
           ),

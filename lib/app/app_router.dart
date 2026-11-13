@@ -8,6 +8,7 @@ import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/shop_setup_screen.dart';
 import '../features/onboarding/presentation/language_picker_screen.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
+import '../features/reports/presentation/reports_screen.dart';
 import '../features/sellers/presentation/seller_detail_screen.dart';
 import '../features/sellers/presentation/sellers_screen.dart';
 import '../features/settings/domain/app_preferences.dart';
@@ -147,6 +148,14 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
             _buildTransitionPage(
           key: state.pageKey,
           child: const DesignPreviewScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/reports',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _buildTransitionPage(
+          key: state.pageKey,
+          child: const ReportsScreen(),
         ),
       ),
       GoRoute(

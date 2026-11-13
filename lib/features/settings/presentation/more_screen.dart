@@ -133,6 +133,23 @@ class MoreScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.lg),
           AppCard(
+            onTap: () => context.push('/reports'),
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.analytics_outlined, color: colors.primary),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    l10n.reportsTitle,
+                    style: context.text.bodyMedium,
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppCard(
             onTap: () => context.push('/lotteries-templates'),
             child: Row(
               children: <Widget>[

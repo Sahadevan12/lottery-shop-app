@@ -1074,4 +1074,125 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorInvalidClaimStatus => 'Invalid claim status for this ticket.';
+
+  @override
+  String get errorRangeTooLarge => 'Date range cannot exceed 366 days.';
+
+  @override
+  String todayWinsBannerTitle(String count, String amount) {
+    return '$count wins today ($amount)';
+  }
+
+  @override
+  String unclaimedWinsCountLabel(String count) {
+    return '$count unclaimed';
+  }
+
+  @override
+  String get toRecoverOfficeLabel => 'To recover from office';
+
+  @override
+  String get viewReportsAction => 'Reports & P&L';
+
+  @override
+  String get reportsTitle => 'Reports & P&L';
+
+  @override
+  String get reportsPeriodToday => 'Today';
+
+  @override
+  String get reportsPeriodWeek => 'This week';
+
+  @override
+  String get reportsPeriodMonth => 'This month';
+
+  @override
+  String get reportsPeriod30Days => '30 days';
+
+  @override
+  String get reportsEmptyTitle => 'No draws in this period';
+
+  @override
+  String get reportsEmptySubtitle =>
+      'Create draws or adjust the date range to view P&L.';
+
+  @override
+  String get pnlSalesLabel => 'Total sales';
+
+  @override
+  String get pnlStockCostLabel => 'Stock cost';
+
+  @override
+  String get pnlGrossMarginLabel => 'Gross margin';
+
+  @override
+  String get pnlUnsoldGainLabel => 'Unsold prize gain';
+
+  @override
+  String get pnlNetProfitLabel => 'Net profit';
+
+  @override
+  String get pnlToRecoverOfficeLabel => 'To recover from lottery office';
+
+  @override
+  String get pnlToCollectSellersLabel => 'To collect from sellers';
+
+  @override
+  String get pnlDrawBreakdownTitle => 'Draw-wise P&L';
+
+  @override
+  String get pnlTapToExplainHint => 'Tap any figure to see its formula';
+
+  @override
+  String pnlFormulaSales(
+      String sold, String price, String counter, String seller) {
+    return 'Sold tickets ($sold × $price) = Counter ($counter) + Sellers ($seller)';
+  }
+
+  @override
+  String pnlFormulaStockCost(String bought) {
+    return 'All tickets bought ($bought) × cost per ticket';
+  }
+
+  @override
+  String get pnlFormulaGrossMargin => 'Sales − Stock cost';
+
+  @override
+  String get pnlFormulaUnsoldGain =>
+      'Prizes won by UNSOLD tickets (claimed by owner)';
+
+  @override
+  String get pnlFormulaNetProfit =>
+      'Gross margin + Unsold prize gain (customer prizes are paid by the Lottery Dept)';
+
+  @override
+  String get pnlFormulaRecoverOffice =>
+      'Wins marked \'Paid to customer\' not yet \'Claimed from office\'';
+
+  @override
+  String get pnlFormulaCollectSellers => 'Current net dues owed by all sellers';
+
+  @override
+  String get exportPdfReportAction => 'Export PDF report';
+
+  @override
+  String get posterTemplateLabel => 'Template';
+
+  @override
+  String get posterTemplateClassic => 'Classic Gold';
+
+  @override
+  String get posterTemplateEmerald => 'Calm Emerald';
+
+  @override
+  String get posterTemplateFestive => 'Festive Banner';
+
+  @override
+  String get posterLanguageLabel => 'Poster language';
+
+  @override
+  String get posterMaskNumbersLabel => 'Mask ticket numbers (e.g. KR 48****)';
+
+  @override
+  String get posterShareNowAction => 'Share 1080×1350 PNG';
 }

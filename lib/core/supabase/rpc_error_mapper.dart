@@ -107,6 +107,9 @@ abstract final class RpcErrorMapper {
     if (code.contains('INVALID_CLAIM_STATUS')) {
       return l10n.errorInvalidClaimStatus;
     }
+    if (code.contains('RANGE_TOO_LARGE')) {
+      return l10n.errorRangeTooLarge;
+    }
     if (code.contains('DRAW_NOT_OPEN')) {
       return l10n.errorDrawNotOpen;
     }
