@@ -549,4 +549,362 @@ class AppLocalizationsMl extends AppLocalizations {
   @override
   String get ticketRetentionNote =>
       'നറുക്കെടുപ്പ് കഴിഞ്ഞ് 30 ദിവസം വരെ ടിക്കറ്റ് വിവരങ്ങൾ സൂക്ഷിക്കും';
+
+  @override
+  String get errorTicketsNotAvailable =>
+      'തിരഞ്ഞെടുത്ത ചില ടിക്കറ്റുകൾ സ്റ്റോക്കിൽ ലഭ്യമല്ല. പട്ടിക പുതുക്കുന്നു…';
+
+  @override
+  String get errorTicketsNotWithSeller =>
+      'തിരഞ്ഞെടുത്ത ചില ടിക്കറ്റുകൾ ഈ വിൽപ്പനക്കാരന്റെ കൈവശമല്ല. പട്ടിക പുതുക്കുന്നു…';
+
+  @override
+  String get errorInvalidAmount =>
+      '₹1-നും ₹10,00,000-നും ഇടയിലുള്ള ശരിയായ തുക നൽകുക.';
+
+  @override
+  String get errorNotReversible =>
+      'പേയ്‌മെന്റ്, സമ്മാനത്തുക, അഡ്ജസ്റ്റ്‌മെന്റ് എൻട്രികൾ മാത്രമേ റദ്ദാക്കാൻ കഴിയൂ.';
+
+  @override
+  String get errorAlreadyReversed => 'ഈ എൻട്രി ഇതിനകം റദ്ദാക്കിയതാണ്.';
+
+  @override
+  String get errorLedgerImmutable =>
+      'ഖാത്ത എൻട്രികൾ നേരിട്ട് മാറ്റാനോ ഡിലീറ്റ് ചെയ്യാനോ കഴിയില്ല. റദ്ദാക്കൽ ഉപയോഗിക്കുക.';
+
+  @override
+  String get errorPriceLocked =>
+      'ഈ നറുക്കെടുപ്പിന് ഖാത്ത എൻട്രികൾ ഉള്ളതിനാൽ ടിക്കറ്റ് വില മാറ്റാനാകില്ല.';
+
+  @override
+  String get errorSellerInactive =>
+      'നിർജ്ജീവമായ വിൽപ്പനക്കാരന് ടിക്കറ്റ് നൽകാനാകില്ല.';
+
+  @override
+  String get sellersScreenTitle => 'വിൽപ്പനക്കാരും ഖാത്തയും';
+
+  @override
+  String get sellersSearchHint => 'പേര് അല്ലെങ്കിൽ സ്ഥലം തിരയുക';
+
+  @override
+  String get sortHighestDue => 'കൂടുതൽ ബാക്കി';
+
+  @override
+  String get sortName => 'പേര്';
+
+  @override
+  String get sortRecent => 'പുതിയത്';
+
+  @override
+  String get filterInactive => 'നിർജ്ജീവം';
+
+  @override
+  String get sellerInactiveBadge => 'നിർജ്ജീവം';
+
+  @override
+  String get sellerSettledLabel => 'തീർത്തു';
+
+  @override
+  String get sellerAdvanceLabel => 'അഡ്വാൻസ് ക്രെഡിറ്റ്';
+
+  @override
+  String ticketsWithSellerCount(String count) {
+    return '$count കൈവശം';
+  }
+
+  @override
+  String get addSellerAction => 'വിൽപ്പനക്കാരനെ ചേർക്കുക';
+
+  @override
+  String get editSellerTitle => 'വിൽപ്പനക്കാരനെ തിരുത്തുക';
+
+  @override
+  String get sellerNameLabel => 'വിൽപ്പനക്കാരന്റെ പേര്';
+
+  @override
+  String get sellerNameHint => 'ഉദാ. രാജൻ';
+
+  @override
+  String get sellerNameRequiredError => 'വിൽപ്പനക്കാരന്റെ പേര് നൽകുക';
+
+  @override
+  String get sellerAreaLabel => 'സ്ഥലം / റൂട്ട് (നിർബന്ധമില്ല)';
+
+  @override
+  String get sellerAreaHint => 'ഉദാ. ആലുവ മാർക്കറ്റ്';
+
+  @override
+  String get sellerSavedSuccess => 'വിൽപ്പനക്കാരനെ സേവ് ചെയ്തു';
+
+  @override
+  String get deactivateSellerAction => 'നിർജ്ജീവമാക്കുക';
+
+  @override
+  String get reactivateSellerAction => 'സജീവമാക്കുക';
+
+  @override
+  String get deactivateSellerTitle => 'ഈ വിൽപ്പനക്കാരനെ നിർജ്ജീവമാക്കണോ?';
+
+  @override
+  String get deactivateSellerBody =>
+      'ഖാത്ത വിവരങ്ങൾ സുരക്ഷിതമായി തുടരും; ടിക്കറ്റ് നൽകുന്ന ലിസ്റ്റിൽ നിന്ന് ഇവരെ മറയ്ക്കും.';
+
+  @override
+  String get sellerDeactivatedSuccess => 'വിൽപ്പനക്കാരനെ നിർജ്ജീവമാക്കി';
+
+  @override
+  String get sellerReactivatedSuccess => 'വിൽപ്പനക്കാരനെ സജീവമാക്കി';
+
+  @override
+  String get deleteSellerTitle => 'ഈ വിൽപ്പനക്കാരനെ നീക്കം ചെയ്യണോ?';
+
+  @override
+  String get deleteSellerBody =>
+      'ഖാത്ത ഇടപാടുകൾ ഇല്ലാത്തതിനാൽ ഇവരെ പൂർണ്ണമായി നീക്കം ചെയ്യും.';
+
+  @override
+  String get sellerDeletedSuccess => 'വിൽപ്പനക്കാരനെ നീക്കം ചെയ്തു';
+
+  @override
+  String get sellerBalanceDueLabel => 'ലഭിക്കാനുള്ള തുക (വിവരങ്ങൾക്ക് തൊടുക)';
+
+  @override
+  String get giveTicketsShortAction => 'ടിക്കറ്റ് നൽകുക';
+
+  @override
+  String get takeReturnAction => 'റിട്ടേൺ എടുക്കുക';
+
+  @override
+  String get recordPaymentShortAction => 'പണം രേഖപ്പെടുത്തുക';
+
+  @override
+  String get sellerTabLedger => 'ഖാത്ത';
+
+  @override
+  String get sellerTabTickets => 'ടിക്കറ്റുകൾ';
+
+  @override
+  String get sellerTabWins => 'സമ്മാനങ്ങൾ';
+
+  @override
+  String get ledgerEmptyTitle => 'ഖാത്ത വിവരങ്ങൾ ഇല്ല';
+
+  @override
+  String get ledgerEmptyBody =>
+      'ടിക്കറ്റ് നൽകുകയോ പണം രേഖപ്പെടുത്തുകയോ ചെയ്യുക.';
+
+  @override
+  String get sellerTicketsEmptyTitle => 'കൈവശം ടിക്കറ്റുകൾ ഇല്ല';
+
+  @override
+  String get sellerTicketsEmptyBody =>
+      'കടമായി ടിക്കറ്റ് നൽകാൻ \'ടിക്കറ്റ് നൽകുക\' അമർത്തുക.';
+
+  @override
+  String get sellerWinsEmptyTitle => 'സമ്മാന ടിക്കറ്റുകൾ ഇല്ല';
+
+  @override
+  String get sellerWinsEmptyBody =>
+      'ഫലം പരിശോധിച്ച ശേഷം സമ്മാന ടിക്കറ്റുകൾ ഇവിടെ കാണാം.';
+
+  @override
+  String get ledgerTypeIssue => 'നൽകിയ ടിക്കറ്റുകൾ';
+
+  @override
+  String get ledgerTypeReturn => 'തിരികെ ലഭിച്ചവ';
+
+  @override
+  String get ledgerTypePayment => 'ലഭിച്ച പണം';
+
+  @override
+  String get ledgerTypePrizePaid => 'വിൽപ്പനക്കാരൻ നൽകിയ സമ്മാനം';
+
+  @override
+  String get ledgerTypeAdjustment => 'റദ്ദാക്കൽ ക്രമീകരണം';
+
+  @override
+  String get paymentMethodCash => 'പണം (Cash)';
+
+  @override
+  String get paymentMethodUpi => 'UPI';
+
+  @override
+  String get paymentMethodOther => 'മറ്റുള്ളവ';
+
+  @override
+  String get reversedChipLabel => 'റദ്ദാക്കി';
+
+  @override
+  String get reversalOfLabel => 'മുൻ എൻട്രി റദ്ദാക്കൽ';
+
+  @override
+  String get reverseEntryAction => 'എൻട്രി റദ്ദാക്കുക';
+
+  @override
+  String get reverseEntryTitle => 'ഈ ഖാത്ത എൻട്രി റദ്ദാക്കണോ?';
+
+  @override
+  String get reverseEntryBody =>
+      'തുക ക്രമീകരിക്കാൻ പുതിയൊരു അഡ്ജസ്റ്റ്‌മെന്റ് എൻട്രി ചേർക്കും.';
+
+  @override
+  String get entryReversedSuccess => 'എൻട്രി റദ്ദാക്കി';
+
+  @override
+  String get giveTicketsSheetTitle => 'വിൽപ്പനക്കാരന് ടിക്കറ്റ് നൽകുക';
+
+  @override
+  String get selectSellerLabel => 'വിൽപ്പനക്കാരൻ';
+
+  @override
+  String get issueModeByCount => 'എണ്ണം വഴി';
+
+  @override
+  String get issueModeByRange => 'റേഞ്ച് വഴി';
+
+  @override
+  String get ticketCountToGiveLabel => 'നൽകേണ്ട ടിക്കറ്റുകളുടെ എണ്ണം';
+
+  @override
+  String get ticketCountToGiveHint => 'ഉദാ. 50';
+
+  @override
+  String get nextTicketsPreviewLabel =>
+      'സ്റ്റോക്കിൽ നിന്നുള്ള അടുത്ത ടിക്കറ്റുകൾ:';
+
+  @override
+  String get notEnoughStockError =>
+      'ഈ നറുക്കെടുപ്പിൽ ആവശ്യത്തിന് IN_STOCK ടിക്കറ്റുകൾ ഇല്ല';
+
+  @override
+  String get issueTotalAmountLabel => 'ഖാത്ത തുക';
+
+  @override
+  String get confirmGiveTicketsAction => 'സ്ഥിരീകരിച്ച് നൽകുക';
+
+  @override
+  String ticketsIssuedSuccess(String count) {
+    return '$count ടിക്കറ്റുകൾ നൽകി';
+  }
+
+  @override
+  String get returnTicketsSheetTitle => 'വിൽക്കാത്ത ടിക്കറ്റ് തിരികെ എടുക്കുക';
+
+  @override
+  String get returnModeByRange => 'റേഞ്ച് വഴി';
+
+  @override
+  String get returnModeBySelect => 'തിരഞ്ഞെടുക്കുക';
+
+  @override
+  String get returnTotalCreditLabel => 'ഖാത്ത കുറയ്ക്കുന്ന തുക';
+
+  @override
+  String get confirmReturnTicketsAction => 'റിട്ടേൺ സ്ഥിരീകരിക്കുക';
+
+  @override
+  String ticketsReturnedSuccess(String count) {
+    return '$count ടിക്കറ്റുകൾ തിരികെ എടുത്തു';
+  }
+
+  @override
+  String get recordPaymentSheetTitle => 'പണം / സമ്മാനം രേഖപ്പെടുത്തുക';
+
+  @override
+  String get entryKindPayment => 'ലഭിച്ച പണം';
+
+  @override
+  String get entryKindPrizePaid => 'വിൽപ്പനക്കാരൻ നൽകിയ സമ്മാനം';
+
+  @override
+  String get amountRupeesLabel => 'തുക (₹)';
+
+  @override
+  String get amountRupeesHint => 'ഉദാ. 1500';
+
+  @override
+  String get paymentMethodLabel => 'പേയ്‌മെന്റ് രീതി';
+
+  @override
+  String get noteOptionalLabel => 'കുറിപ്പ് (നിർബന്ധമില്ല)';
+
+  @override
+  String get noteOptionalHint => 'ഉദാ. രാവിലെ പിരിച്ചത്';
+
+  @override
+  String get advanceWarningTitle => 'ബാക്കി തുകയേക്കാൾ കൂടുതൽ';
+
+  @override
+  String advanceWarningBody(String advance) {
+    return 'ഈ തുക നിലവിലെ ബാക്കിയേക്കാൾ കൂടുതലാണ്; $advance അഡ്വാൻസ് ആയി രേഖപ്പെടുത്തും.';
+  }
+
+  @override
+  String get confirmAdvanceAction => 'അഡ്വാൻസ് സഹിതം സേവ് ചെയ്യുക';
+
+  @override
+  String paymentRecordedSuccess(String amount) {
+    return '$amount രേഖപ്പെടുത്തി';
+  }
+
+  @override
+  String get balanceBreakdownTitle => 'ബാക്കി തുകയുടെ കണക്ക്';
+
+  @override
+  String get breakdownPerDrawSection => 'നറുക്കെടുപ്പ് തിരിച്ച്';
+
+  @override
+  String get breakdownPaymentsSection => 'ലഭിച്ച പണവും ക്രമീകരണങ്ങളും';
+
+  @override
+  String breakdownIssuedRow(String count) {
+    return 'നൽകിയത് ($count ടിക്കറ്റുകൾ)';
+  }
+
+  @override
+  String breakdownReturnedRow(String count) {
+    return 'തിരികെ എടുത്തത് ($count ടിക്കറ്റുകൾ)';
+  }
+
+  @override
+  String get breakdownPrizePaidRow => 'വിൽപ്പനക്കാരൻ നൽകിയ സമ്മാനങ്ങൾ';
+
+  @override
+  String get breakdownDrawSubtotal => 'നറുക്കെടുപ്പ് ബാക്കി';
+
+  @override
+  String get breakdownPaymentsTotal => 'ആകെ ലഭിച്ച പണം';
+
+  @override
+  String get breakdownAdjustmentsTotal => 'റദ്ദാക്കലുകളും ക്രമീകരണങ്ങളും';
+
+  @override
+  String get breakdownGrandTotal => 'ആകെ ലഭിക്കാനുള്ള തുക';
+
+  @override
+  String get shareStatementAction => 'സ്റ്റേറ്റ്‌മെന്റ് ഷെയർ ചെയ്യുക';
+
+  @override
+  String get sellerStatementTitle => 'വിൽപ്പനക്കാരന്റെ ഖാത്ത സ്റ്റേറ്റ്‌മെന്റ്';
+
+  @override
+  String get counterSaleAction => 'കൗണ്ടർ വിൽപ്പന (റേഞ്ച്)';
+
+  @override
+  String get counterSaleSheetTitle => 'കൗണ്ടർ വിൽപ്പന (റേഞ്ച് വഴി)';
+
+  @override
+  String get counterSaleModeMark => 'കൗണ്ടർ വിൽപ്പനയായി അടയാളപ്പെടുത്തുക';
+
+  @override
+  String get counterSaleModeUnmark => 'തിരികെ സ്റ്റോക്കിലേക്ക് മാറ്റുക';
+
+  @override
+  String get confirmCounterSaleAction => 'അപ്‌ഡേറ്റ് ചെയ്യുക';
+
+  @override
+  String counterSaleUpdatedSuccess(String count) {
+    return '$count ടിക്കറ്റുകൾ അപ്‌ഡേറ്റ് ചെയ്തു';
+  }
 }

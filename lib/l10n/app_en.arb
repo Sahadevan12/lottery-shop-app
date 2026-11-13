@@ -230,5 +230,170 @@
   "errorInvalidRange": "Enter a valid series and 6-digit range (max 5,000 tickets, end ≥ start).",
   "errorUnauthorized": "Please sign in again to continue.",
   "errorGeneric": "Something went wrong. Please try again.",
-  "ticketRetentionNote": "Ticket-level detail is kept for 30 days after a draw closes"
+  "ticketRetentionNote": "Ticket-level detail is kept for 30 days after a draw closes",
+  "errorTicketsNotAvailable": "Some selected tickets are no longer available in stock. Refreshing list…",
+  "errorTicketsNotWithSeller": "Some selected tickets are not currently with this seller. Refreshing list…",
+  "errorInvalidAmount": "Enter a valid amount between ₹1 and ₹10,00,000.",
+  "errorNotReversible": "Only payment, prize-paid, and adjustment entries can be reversed.",
+  "errorAlreadyReversed": "This entry has already been reversed.",
+  "errorLedgerImmutable": "Ledger entries cannot be edited or deleted directly. Use Reverse instead.",
+  "errorPriceLocked": "Ticket price cannot be changed after ledger entries exist for this draw.",
+  "errorSellerInactive": "Cannot issue tickets to an inactive seller.",
+  "sellersScreenTitle": "Sellers & Khata",
+  "sellersSearchHint": "Search seller name or area",
+  "sortHighestDue": "Highest due",
+  "sortName": "Name",
+  "sortRecent": "Recent",
+  "filterInactive": "Inactive",
+  "sellerInactiveBadge": "Inactive",
+  "sellerSettledLabel": "Settled",
+  "sellerAdvanceLabel": "Advance credit",
+  "ticketsWithSellerCount": "{count} with seller",
+  "@ticketsWithSellerCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "addSellerAction": "Add seller",
+  "editSellerTitle": "Edit seller",
+  "sellerNameLabel": "Seller name",
+  "sellerNameHint": "e.g. Rajan",
+  "sellerNameRequiredError": "Please enter the seller's name",
+  "sellerAreaLabel": "Area / route (optional)",
+  "sellerAreaHint": "e.g. Aluva Market",
+  "sellerSavedSuccess": "Seller saved",
+  "deactivateSellerAction": "Deactivate seller",
+  "reactivateSellerAction": "Reactivate seller",
+  "deactivateSellerTitle": "Deactivate this seller?",
+  "deactivateSellerBody": "Inactive sellers are hidden from ticket issue pickers, while their khata history stays intact.",
+  "sellerDeactivatedSuccess": "Seller deactivated",
+  "sellerReactivatedSuccess": "Seller reactivated",
+  "deleteSellerTitle": "Delete this seller?",
+  "deleteSellerBody": "This seller has no ledger history and will be removed permanently.",
+  "sellerDeletedSuccess": "Seller deleted",
+  "sellerBalanceDueLabel": "Balance due (tap for breakdown)",
+  "giveTicketsShortAction": "Give tickets",
+  "takeReturnAction": "Take return",
+  "recordPaymentShortAction": "Record payment",
+  "sellerTabLedger": "Ledger",
+  "sellerTabTickets": "Tickets",
+  "sellerTabWins": "Wins",
+  "ledgerEmptyTitle": "No khata entries yet",
+  "ledgerEmptyBody": "Issue tickets or record a payment to start this seller's khata.",
+  "sellerTicketsEmptyTitle": "No tickets with this seller",
+  "sellerTicketsEmptyBody": "Use 'Give tickets' to issue tickets on credit.",
+  "sellerWinsEmptyTitle": "No winning tickets yet",
+  "sellerWinsEmptyBody": "Winning tickets sold by this seller will appear here after draw results are checked.",
+  "ledgerTypeIssue": "Tickets issued",
+  "ledgerTypeReturn": "Unsold returned",
+  "ledgerTypePayment": "Payment received",
+  "ledgerTypePrizePaid": "Prize paid by seller",
+  "ledgerTypeAdjustment": "Reversal adjustment",
+  "paymentMethodCash": "Cash",
+  "paymentMethodUpi": "UPI",
+  "paymentMethodOther": "Other",
+  "reversedChipLabel": "Reversed",
+  "reversalOfLabel": "Reverses earlier entry",
+  "reverseEntryAction": "Reverse entry",
+  "reverseEntryTitle": "Reverse this khata entry?",
+  "reverseEntryBody": "This adds a matching adjustment entry to cancel out the amount. Ledger history remains auditable.",
+  "entryReversedSuccess": "Entry reversed",
+  "giveTicketsSheetTitle": "Give tickets to seller",
+  "selectSellerLabel": "Seller",
+  "issueModeByCount": "By count",
+  "issueModeByRange": "By range",
+  "ticketCountToGiveLabel": "Number of tickets to give",
+  "ticketCountToGiveHint": "e.g. 50",
+  "nextTicketsPreviewLabel": "Auto-selected next IN_STOCK tickets:",
+  "notEnoughStockError": "Not enough IN_STOCK tickets in this draw",
+  "issueTotalAmountLabel": "Khata debit amount",
+  "confirmGiveTicketsAction": "Confirm & issue tickets",
+  "ticketsIssuedSuccess": "Issued {count} tickets",
+  "@ticketsIssuedSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "returnTicketsSheetTitle": "Take unsold return",
+  "returnModeByRange": "By range",
+  "returnModeBySelect": "Tap to select",
+  "returnTotalCreditLabel": "Khata credit amount",
+  "confirmReturnTicketsAction": "Confirm return",
+  "ticketsReturnedSuccess": "Returned {count} tickets",
+  "@ticketsReturnedSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "recordPaymentSheetTitle": "Record payment / prize paid",
+  "entryKindPayment": "Payment collected",
+  "entryKindPrizePaid": "Prize paid by seller",
+  "amountRupeesLabel": "Amount (₹)",
+  "amountRupeesHint": "e.g. 1500",
+  "paymentMethodLabel": "Payment method",
+  "noteOptionalLabel": "Note (optional)",
+  "noteOptionalHint": "e.g. Morning collection",
+  "advanceWarningTitle": "Exceeds current balance due",
+  "advanceWarningBody": "This payment is higher than what the seller currently owes and will record an advance credit of {advance}.",
+  "@advanceWarningBody": {
+    "placeholders": {
+      "advance": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmAdvanceAction": "Record with advance",
+  "paymentRecordedSuccess": "Recorded {amount}",
+  "@paymentRecordedSuccess": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "balanceBreakdownTitle": "How this balance is calculated",
+  "breakdownPerDrawSection": "By draw",
+  "breakdownPaymentsSection": "Payments & adjustments",
+  "breakdownIssuedRow": "Issued ({count} tickets)",
+  "@breakdownIssuedRow": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "breakdownReturnedRow": "Returned ({count} tickets)",
+  "@breakdownReturnedRow": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "breakdownPrizePaidRow": "Prizes paid by seller",
+  "breakdownDrawSubtotal": "Draw subtotal",
+  "breakdownPaymentsTotal": "Total payments received",
+  "breakdownAdjustmentsTotal": "Reversals & adjustments",
+  "breakdownGrandTotal": "Net balance due",
+  "shareStatementAction": "Share statement",
+  "sellerStatementTitle": "Seller Khata Statement",
+  "counterSaleAction": "Counter sale range",
+  "counterSaleSheetTitle": "Counter sales (by range)",
+  "counterSaleModeMark": "Mark as counter sold",
+  "counterSaleModeUnmark": "Unmark to in-stock",
+  "confirmCounterSaleAction": "Update counter sales",
+  "counterSaleUpdatedSuccess": "Updated {count} tickets",
+  "@counterSaleUpdatedSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  }
 }

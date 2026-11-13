@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucky_ledger/app/main_shell_screen.dart';
 import 'package:lucky_ledger/core/theme/app_theme.dart';
 import 'package:lucky_ledger/features/auth/presentation/auth_controller.dart';
+import 'package:lucky_ledger/features/sellers/presentation/sellers_controller.dart';
 import 'package:lucky_ledger/features/settings/presentation/app_preferences_controller.dart';
 import 'package:lucky_ledger/features/stock/domain/stock_entities.dart';
 import 'package:lucky_ledger/features/stock/domain/stock_range_logic.dart';
@@ -15,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../helpers/fake_repositories.dart';
+import '../../helpers/fake_seller_repository.dart';
 
 void main() {
   group('Phase 2 — StockRangeLogic Pure Unit Tests (§7.1)', () {
@@ -229,6 +231,9 @@ void main() {
               sharedPreferencesProvider.overrideWithValue(prefs),
               authRepositoryProvider.overrideWithValue(fakeAuth),
               stockRepositoryProvider.overrideWithValue(fakeStock),
+              sellerRepositoryProvider.overrideWithValue(
+                FakeSellerRepository(fakeStock),
+              ),
             ],
             child: MaterialApp(
               locale: const Locale('en'),

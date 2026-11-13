@@ -1113,6 +1113,660 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ticket-level detail is kept for 30 days after a draw closes'**
   String get ticketRetentionNote;
+
+  /// No description provided for @errorTicketsNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Some selected tickets are no longer available in stock. Refreshing list…'**
+  String get errorTicketsNotAvailable;
+
+  /// No description provided for @errorTicketsNotWithSeller.
+  ///
+  /// In en, this message translates to:
+  /// **'Some selected tickets are not currently with this seller. Refreshing list…'**
+  String get errorTicketsNotWithSeller;
+
+  /// No description provided for @errorInvalidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid amount between ₹1 and ₹10,00,000.'**
+  String get errorInvalidAmount;
+
+  /// No description provided for @errorNotReversible.
+  ///
+  /// In en, this message translates to:
+  /// **'Only payment, prize-paid, and adjustment entries can be reversed.'**
+  String get errorNotReversible;
+
+  /// No description provided for @errorAlreadyReversed.
+  ///
+  /// In en, this message translates to:
+  /// **'This entry has already been reversed.'**
+  String get errorAlreadyReversed;
+
+  /// No description provided for @errorLedgerImmutable.
+  ///
+  /// In en, this message translates to:
+  /// **'Ledger entries cannot be edited or deleted directly. Use Reverse instead.'**
+  String get errorLedgerImmutable;
+
+  /// No description provided for @errorPriceLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket price cannot be changed after ledger entries exist for this draw.'**
+  String get errorPriceLocked;
+
+  /// No description provided for @errorSellerInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot issue tickets to an inactive seller.'**
+  String get errorSellerInactive;
+
+  /// No description provided for @sellersScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sellers & Khata'**
+  String get sellersScreenTitle;
+
+  /// No description provided for @sellersSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search seller name or area'**
+  String get sellersSearchHint;
+
+  /// No description provided for @sortHighestDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest due'**
+  String get sortHighestDue;
+
+  /// No description provided for @sortName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get sortName;
+
+  /// No description provided for @sortRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get sortRecent;
+
+  /// No description provided for @filterInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get filterInactive;
+
+  /// No description provided for @sellerInactiveBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get sellerInactiveBadge;
+
+  /// No description provided for @sellerSettledLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Settled'**
+  String get sellerSettledLabel;
+
+  /// No description provided for @sellerAdvanceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance credit'**
+  String get sellerAdvanceLabel;
+
+  /// No description provided for @ticketsWithSellerCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} with seller'**
+  String ticketsWithSellerCount(String count);
+
+  /// No description provided for @addSellerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add seller'**
+  String get addSellerAction;
+
+  /// No description provided for @editSellerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit seller'**
+  String get editSellerTitle;
+
+  /// No description provided for @sellerNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller name'**
+  String get sellerNameLabel;
+
+  /// No description provided for @sellerNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Rajan'**
+  String get sellerNameHint;
+
+  /// No description provided for @sellerNameRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the seller\'s name'**
+  String get sellerNameRequiredError;
+
+  /// No description provided for @sellerAreaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Area / route (optional)'**
+  String get sellerAreaLabel;
+
+  /// No description provided for @sellerAreaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Aluva Market'**
+  String get sellerAreaHint;
+
+  /// No description provided for @sellerSavedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller saved'**
+  String get sellerSavedSuccess;
+
+  /// No description provided for @deactivateSellerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate seller'**
+  String get deactivateSellerAction;
+
+  /// No description provided for @reactivateSellerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate seller'**
+  String get reactivateSellerAction;
+
+  /// No description provided for @deactivateSellerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate this seller?'**
+  String get deactivateSellerTitle;
+
+  /// No description provided for @deactivateSellerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive sellers are hidden from ticket issue pickers, while their khata history stays intact.'**
+  String get deactivateSellerBody;
+
+  /// No description provided for @sellerDeactivatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller deactivated'**
+  String get sellerDeactivatedSuccess;
+
+  /// No description provided for @sellerReactivatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller reactivated'**
+  String get sellerReactivatedSuccess;
+
+  /// No description provided for @deleteSellerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this seller?'**
+  String get deleteSellerTitle;
+
+  /// No description provided for @deleteSellerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This seller has no ledger history and will be removed permanently.'**
+  String get deleteSellerBody;
+
+  /// No description provided for @sellerDeletedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller deleted'**
+  String get sellerDeletedSuccess;
+
+  /// No description provided for @sellerBalanceDueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance due (tap for breakdown)'**
+  String get sellerBalanceDueLabel;
+
+  /// No description provided for @giveTicketsShortAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Give tickets'**
+  String get giveTicketsShortAction;
+
+  /// No description provided for @takeReturnAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Take return'**
+  String get takeReturnAction;
+
+  /// No description provided for @recordPaymentShortAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Record payment'**
+  String get recordPaymentShortAction;
+
+  /// No description provided for @sellerTabLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'Ledger'**
+  String get sellerTabLedger;
+
+  /// No description provided for @sellerTabTickets.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets'**
+  String get sellerTabTickets;
+
+  /// No description provided for @sellerTabWins.
+  ///
+  /// In en, this message translates to:
+  /// **'Wins'**
+  String get sellerTabWins;
+
+  /// No description provided for @ledgerEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No khata entries yet'**
+  String get ledgerEmptyTitle;
+
+  /// No description provided for @ledgerEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue tickets or record a payment to start this seller\'s khata.'**
+  String get ledgerEmptyBody;
+
+  /// No description provided for @sellerTicketsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No tickets with this seller'**
+  String get sellerTicketsEmptyTitle;
+
+  /// No description provided for @sellerTicketsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use \'Give tickets\' to issue tickets on credit.'**
+  String get sellerTicketsEmptyBody;
+
+  /// No description provided for @sellerWinsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No winning tickets yet'**
+  String get sellerWinsEmptyTitle;
+
+  /// No description provided for @sellerWinsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Winning tickets sold by this seller will appear here after draw results are checked.'**
+  String get sellerWinsEmptyBody;
+
+  /// No description provided for @ledgerTypeIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets issued'**
+  String get ledgerTypeIssue;
+
+  /// No description provided for @ledgerTypeReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsold returned'**
+  String get ledgerTypeReturn;
+
+  /// No description provided for @ledgerTypePayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment received'**
+  String get ledgerTypePayment;
+
+  /// No description provided for @ledgerTypePrizePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Prize paid by seller'**
+  String get ledgerTypePrizePaid;
+
+  /// No description provided for @ledgerTypeAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Reversal adjustment'**
+  String get ledgerTypeAdjustment;
+
+  /// No description provided for @paymentMethodCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get paymentMethodCash;
+
+  /// No description provided for @paymentMethodUpi.
+  ///
+  /// In en, this message translates to:
+  /// **'UPI'**
+  String get paymentMethodUpi;
+
+  /// No description provided for @paymentMethodOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get paymentMethodOther;
+
+  /// No description provided for @reversedChipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reversed'**
+  String get reversedChipLabel;
+
+  /// No description provided for @reversalOfLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reverses earlier entry'**
+  String get reversalOfLabel;
+
+  /// No description provided for @reverseEntryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reverse entry'**
+  String get reverseEntryAction;
+
+  /// No description provided for @reverseEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reverse this khata entry?'**
+  String get reverseEntryTitle;
+
+  /// No description provided for @reverseEntryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This adds a matching adjustment entry to cancel out the amount. Ledger history remains auditable.'**
+  String get reverseEntryBody;
+
+  /// No description provided for @entryReversedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry reversed'**
+  String get entryReversedSuccess;
+
+  /// No description provided for @giveTicketsSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Give tickets to seller'**
+  String get giveTicketsSheetTitle;
+
+  /// No description provided for @selectSellerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller'**
+  String get selectSellerLabel;
+
+  /// No description provided for @issueModeByCount.
+  ///
+  /// In en, this message translates to:
+  /// **'By count'**
+  String get issueModeByCount;
+
+  /// No description provided for @issueModeByRange.
+  ///
+  /// In en, this message translates to:
+  /// **'By range'**
+  String get issueModeByRange;
+
+  /// No description provided for @ticketCountToGiveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of tickets to give'**
+  String get ticketCountToGiveLabel;
+
+  /// No description provided for @ticketCountToGiveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 50'**
+  String get ticketCountToGiveHint;
+
+  /// No description provided for @nextTicketsPreviewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-selected next IN_STOCK tickets:'**
+  String get nextTicketsPreviewLabel;
+
+  /// No description provided for @notEnoughStockError.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough IN_STOCK tickets in this draw'**
+  String get notEnoughStockError;
+
+  /// No description provided for @issueTotalAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Khata debit amount'**
+  String get issueTotalAmountLabel;
+
+  /// No description provided for @confirmGiveTicketsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm & issue tickets'**
+  String get confirmGiveTicketsAction;
+
+  /// No description provided for @ticketsIssuedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Issued {count} tickets'**
+  String ticketsIssuedSuccess(String count);
+
+  /// No description provided for @returnTicketsSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take unsold return'**
+  String get returnTicketsSheetTitle;
+
+  /// No description provided for @returnModeByRange.
+  ///
+  /// In en, this message translates to:
+  /// **'By range'**
+  String get returnModeByRange;
+
+  /// No description provided for @returnModeBySelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to select'**
+  String get returnModeBySelect;
+
+  /// No description provided for @returnTotalCreditLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Khata credit amount'**
+  String get returnTotalCreditLabel;
+
+  /// No description provided for @confirmReturnTicketsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm return'**
+  String get confirmReturnTicketsAction;
+
+  /// No description provided for @ticketsReturnedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned {count} tickets'**
+  String ticketsReturnedSuccess(String count);
+
+  /// No description provided for @recordPaymentSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record payment / prize paid'**
+  String get recordPaymentSheetTitle;
+
+  /// No description provided for @entryKindPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment collected'**
+  String get entryKindPayment;
+
+  /// No description provided for @entryKindPrizePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Prize paid by seller'**
+  String get entryKindPrizePaid;
+
+  /// No description provided for @amountRupeesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (₹)'**
+  String get amountRupeesLabel;
+
+  /// No description provided for @amountRupeesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 1500'**
+  String get amountRupeesHint;
+
+  /// No description provided for @paymentMethodLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment method'**
+  String get paymentMethodLabel;
+
+  /// No description provided for @noteOptionalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get noteOptionalLabel;
+
+  /// No description provided for @noteOptionalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Morning collection'**
+  String get noteOptionalHint;
+
+  /// No description provided for @advanceWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exceeds current balance due'**
+  String get advanceWarningTitle;
+
+  /// No description provided for @advanceWarningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This payment is higher than what the seller currently owes and will record an advance credit of {advance}.'**
+  String advanceWarningBody(String advance);
+
+  /// No description provided for @confirmAdvanceAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Record with advance'**
+  String get confirmAdvanceAction;
+
+  /// No description provided for @paymentRecordedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded {amount}'**
+  String paymentRecordedSuccess(String amount);
+
+  /// No description provided for @balanceBreakdownTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How this balance is calculated'**
+  String get balanceBreakdownTitle;
+
+  /// No description provided for @breakdownPerDrawSection.
+  ///
+  /// In en, this message translates to:
+  /// **'By draw'**
+  String get breakdownPerDrawSection;
+
+  /// No description provided for @breakdownPaymentsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments & adjustments'**
+  String get breakdownPaymentsSection;
+
+  /// No description provided for @breakdownIssuedRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Issued ({count} tickets)'**
+  String breakdownIssuedRow(String count);
+
+  /// No description provided for @breakdownReturnedRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned ({count} tickets)'**
+  String breakdownReturnedRow(String count);
+
+  /// No description provided for @breakdownPrizePaidRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Prizes paid by seller'**
+  String get breakdownPrizePaidRow;
+
+  /// No description provided for @breakdownDrawSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw subtotal'**
+  String get breakdownDrawSubtotal;
+
+  /// No description provided for @breakdownPaymentsTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total payments received'**
+  String get breakdownPaymentsTotal;
+
+  /// No description provided for @breakdownAdjustmentsTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Reversals & adjustments'**
+  String get breakdownAdjustmentsTotal;
+
+  /// No description provided for @breakdownGrandTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Net balance due'**
+  String get breakdownGrandTotal;
+
+  /// No description provided for @shareStatementAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Share statement'**
+  String get shareStatementAction;
+
+  /// No description provided for @sellerStatementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller Khata Statement'**
+  String get sellerStatementTitle;
+
+  /// No description provided for @counterSaleAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Counter sale range'**
+  String get counterSaleAction;
+
+  /// No description provided for @counterSaleSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Counter sales (by range)'**
+  String get counterSaleSheetTitle;
+
+  /// No description provided for @counterSaleModeMark.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as counter sold'**
+  String get counterSaleModeMark;
+
+  /// No description provided for @counterSaleModeUnmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmark to in-stock'**
+  String get counterSaleModeUnmark;
+
+  /// No description provided for @confirmCounterSaleAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update counter sales'**
+  String get confirmCounterSaleAction;
+
+  /// No description provided for @counterSaleUpdatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {count} tickets'**
+  String counterSaleUpdatedSuccess(String count);
 }
 
 class _AppLocalizationsDelegate

@@ -551,4 +551,360 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ticketRetentionNote =>
       'Ticket-level detail is kept for 30 days after a draw closes';
+
+  @override
+  String get errorTicketsNotAvailable =>
+      'Some selected tickets are no longer available in stock. Refreshing list…';
+
+  @override
+  String get errorTicketsNotWithSeller =>
+      'Some selected tickets are not currently with this seller. Refreshing list…';
+
+  @override
+  String get errorInvalidAmount =>
+      'Enter a valid amount between ₹1 and ₹10,00,000.';
+
+  @override
+  String get errorNotReversible =>
+      'Only payment, prize-paid, and adjustment entries can be reversed.';
+
+  @override
+  String get errorAlreadyReversed => 'This entry has already been reversed.';
+
+  @override
+  String get errorLedgerImmutable =>
+      'Ledger entries cannot be edited or deleted directly. Use Reverse instead.';
+
+  @override
+  String get errorPriceLocked =>
+      'Ticket price cannot be changed after ledger entries exist for this draw.';
+
+  @override
+  String get errorSellerInactive =>
+      'Cannot issue tickets to an inactive seller.';
+
+  @override
+  String get sellersScreenTitle => 'Sellers & Khata';
+
+  @override
+  String get sellersSearchHint => 'Search seller name or area';
+
+  @override
+  String get sortHighestDue => 'Highest due';
+
+  @override
+  String get sortName => 'Name';
+
+  @override
+  String get sortRecent => 'Recent';
+
+  @override
+  String get filterInactive => 'Inactive';
+
+  @override
+  String get sellerInactiveBadge => 'Inactive';
+
+  @override
+  String get sellerSettledLabel => 'Settled';
+
+  @override
+  String get sellerAdvanceLabel => 'Advance credit';
+
+  @override
+  String ticketsWithSellerCount(String count) {
+    return '$count with seller';
+  }
+
+  @override
+  String get addSellerAction => 'Add seller';
+
+  @override
+  String get editSellerTitle => 'Edit seller';
+
+  @override
+  String get sellerNameLabel => 'Seller name';
+
+  @override
+  String get sellerNameHint => 'e.g. Rajan';
+
+  @override
+  String get sellerNameRequiredError => 'Please enter the seller\'s name';
+
+  @override
+  String get sellerAreaLabel => 'Area / route (optional)';
+
+  @override
+  String get sellerAreaHint => 'e.g. Aluva Market';
+
+  @override
+  String get sellerSavedSuccess => 'Seller saved';
+
+  @override
+  String get deactivateSellerAction => 'Deactivate seller';
+
+  @override
+  String get reactivateSellerAction => 'Reactivate seller';
+
+  @override
+  String get deactivateSellerTitle => 'Deactivate this seller?';
+
+  @override
+  String get deactivateSellerBody =>
+      'Inactive sellers are hidden from ticket issue pickers, while their khata history stays intact.';
+
+  @override
+  String get sellerDeactivatedSuccess => 'Seller deactivated';
+
+  @override
+  String get sellerReactivatedSuccess => 'Seller reactivated';
+
+  @override
+  String get deleteSellerTitle => 'Delete this seller?';
+
+  @override
+  String get deleteSellerBody =>
+      'This seller has no ledger history and will be removed permanently.';
+
+  @override
+  String get sellerDeletedSuccess => 'Seller deleted';
+
+  @override
+  String get sellerBalanceDueLabel => 'Balance due (tap for breakdown)';
+
+  @override
+  String get giveTicketsShortAction => 'Give tickets';
+
+  @override
+  String get takeReturnAction => 'Take return';
+
+  @override
+  String get recordPaymentShortAction => 'Record payment';
+
+  @override
+  String get sellerTabLedger => 'Ledger';
+
+  @override
+  String get sellerTabTickets => 'Tickets';
+
+  @override
+  String get sellerTabWins => 'Wins';
+
+  @override
+  String get ledgerEmptyTitle => 'No khata entries yet';
+
+  @override
+  String get ledgerEmptyBody =>
+      'Issue tickets or record a payment to start this seller\'s khata.';
+
+  @override
+  String get sellerTicketsEmptyTitle => 'No tickets with this seller';
+
+  @override
+  String get sellerTicketsEmptyBody =>
+      'Use \'Give tickets\' to issue tickets on credit.';
+
+  @override
+  String get sellerWinsEmptyTitle => 'No winning tickets yet';
+
+  @override
+  String get sellerWinsEmptyBody =>
+      'Winning tickets sold by this seller will appear here after draw results are checked.';
+
+  @override
+  String get ledgerTypeIssue => 'Tickets issued';
+
+  @override
+  String get ledgerTypeReturn => 'Unsold returned';
+
+  @override
+  String get ledgerTypePayment => 'Payment received';
+
+  @override
+  String get ledgerTypePrizePaid => 'Prize paid by seller';
+
+  @override
+  String get ledgerTypeAdjustment => 'Reversal adjustment';
+
+  @override
+  String get paymentMethodCash => 'Cash';
+
+  @override
+  String get paymentMethodUpi => 'UPI';
+
+  @override
+  String get paymentMethodOther => 'Other';
+
+  @override
+  String get reversedChipLabel => 'Reversed';
+
+  @override
+  String get reversalOfLabel => 'Reverses earlier entry';
+
+  @override
+  String get reverseEntryAction => 'Reverse entry';
+
+  @override
+  String get reverseEntryTitle => 'Reverse this khata entry?';
+
+  @override
+  String get reverseEntryBody =>
+      'This adds a matching adjustment entry to cancel out the amount. Ledger history remains auditable.';
+
+  @override
+  String get entryReversedSuccess => 'Entry reversed';
+
+  @override
+  String get giveTicketsSheetTitle => 'Give tickets to seller';
+
+  @override
+  String get selectSellerLabel => 'Seller';
+
+  @override
+  String get issueModeByCount => 'By count';
+
+  @override
+  String get issueModeByRange => 'By range';
+
+  @override
+  String get ticketCountToGiveLabel => 'Number of tickets to give';
+
+  @override
+  String get ticketCountToGiveHint => 'e.g. 50';
+
+  @override
+  String get nextTicketsPreviewLabel => 'Auto-selected next IN_STOCK tickets:';
+
+  @override
+  String get notEnoughStockError => 'Not enough IN_STOCK tickets in this draw';
+
+  @override
+  String get issueTotalAmountLabel => 'Khata debit amount';
+
+  @override
+  String get confirmGiveTicketsAction => 'Confirm & issue tickets';
+
+  @override
+  String ticketsIssuedSuccess(String count) {
+    return 'Issued $count tickets';
+  }
+
+  @override
+  String get returnTicketsSheetTitle => 'Take unsold return';
+
+  @override
+  String get returnModeByRange => 'By range';
+
+  @override
+  String get returnModeBySelect => 'Tap to select';
+
+  @override
+  String get returnTotalCreditLabel => 'Khata credit amount';
+
+  @override
+  String get confirmReturnTicketsAction => 'Confirm return';
+
+  @override
+  String ticketsReturnedSuccess(String count) {
+    return 'Returned $count tickets';
+  }
+
+  @override
+  String get recordPaymentSheetTitle => 'Record payment / prize paid';
+
+  @override
+  String get entryKindPayment => 'Payment collected';
+
+  @override
+  String get entryKindPrizePaid => 'Prize paid by seller';
+
+  @override
+  String get amountRupeesLabel => 'Amount (₹)';
+
+  @override
+  String get amountRupeesHint => 'e.g. 1500';
+
+  @override
+  String get paymentMethodLabel => 'Payment method';
+
+  @override
+  String get noteOptionalLabel => 'Note (optional)';
+
+  @override
+  String get noteOptionalHint => 'e.g. Morning collection';
+
+  @override
+  String get advanceWarningTitle => 'Exceeds current balance due';
+
+  @override
+  String advanceWarningBody(String advance) {
+    return 'This payment is higher than what the seller currently owes and will record an advance credit of $advance.';
+  }
+
+  @override
+  String get confirmAdvanceAction => 'Record with advance';
+
+  @override
+  String paymentRecordedSuccess(String amount) {
+    return 'Recorded $amount';
+  }
+
+  @override
+  String get balanceBreakdownTitle => 'How this balance is calculated';
+
+  @override
+  String get breakdownPerDrawSection => 'By draw';
+
+  @override
+  String get breakdownPaymentsSection => 'Payments & adjustments';
+
+  @override
+  String breakdownIssuedRow(String count) {
+    return 'Issued ($count tickets)';
+  }
+
+  @override
+  String breakdownReturnedRow(String count) {
+    return 'Returned ($count tickets)';
+  }
+
+  @override
+  String get breakdownPrizePaidRow => 'Prizes paid by seller';
+
+  @override
+  String get breakdownDrawSubtotal => 'Draw subtotal';
+
+  @override
+  String get breakdownPaymentsTotal => 'Total payments received';
+
+  @override
+  String get breakdownAdjustmentsTotal => 'Reversals & adjustments';
+
+  @override
+  String get breakdownGrandTotal => 'Net balance due';
+
+  @override
+  String get shareStatementAction => 'Share statement';
+
+  @override
+  String get sellerStatementTitle => 'Seller Khata Statement';
+
+  @override
+  String get counterSaleAction => 'Counter sale range';
+
+  @override
+  String get counterSaleSheetTitle => 'Counter sales (by range)';
+
+  @override
+  String get counterSaleModeMark => 'Mark as counter sold';
+
+  @override
+  String get counterSaleModeUnmark => 'Unmark to in-stock';
+
+  @override
+  String get confirmCounterSaleAction => 'Update counter sales';
+
+  @override
+  String counterSaleUpdatedSuccess(String count) {
+    return 'Updated $count tickets';
+  }
 }

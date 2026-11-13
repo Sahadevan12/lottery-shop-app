@@ -22,4 +22,6 @@ jobs:
         run: supabase db start
 
       - name: Run pgTAP tests in supabase/tests
-        run: supabase test db
+        run: |
+          supabase test db
+          docker exec -i $(docker ps --filter "name=supabase_db" --format "{{.Names}}" | head -n 1) psql -U postgres -d postgres -q -f - < supabase/tests/phase4_results_and_pagination_test.sql

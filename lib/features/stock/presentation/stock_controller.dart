@@ -343,4 +343,45 @@ class StockController extends Notifier<StockState> {
       return false;
     }
   }
+
+  Future<int?> updateCounterSoldRange({
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+    required bool markSold,
+  }) async {
+    state = state.copyWith(isSubmitting: true, clearError: true);
+    try {
+      final StockRepository repo = ref.read(stockRepositoryProvider);
+      final int updated = markSold
+          ? await repo.markCounterSold(
+              drawId: drawId,
+              series: series,
+              startNumber: startNumber,
+              endNumber: endNumber,
+            )
+          : await repo.unmarkCounterSold(
+              drawId: drawId,
+              series: series,
+              startNumber: startNumber,
+              endNumber: endNumber,
+            );
+      final List<StockBatch> batches = await repo.fetchBatchesForDraw(drawId);
+      state = state.copyWith(
+        batchesByDraw: <String, List<StockBatch>>{
+          ...state.batchesByDraw,
+          drawId: batches,
+        },
+        isSubmitting: false,
+      );
+      return updated;
+    } catch (err) {
+      state = state.copyWith(
+        isSubmitting: false,
+        errorMessage: err.toString(),
+      );
+      return null;
+    }
+  }
 }

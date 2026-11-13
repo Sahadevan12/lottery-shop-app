@@ -8,6 +8,7 @@ import '../../../core/ui/ui_kit.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/stock_repository.dart';
 import '../domain/stock_entities.dart';
+import 'mark_counter_sold_sheet.dart';
 import 'stock_controller.dart';
 
 /// Read-only Batch Ticket Grid Screen (§8.3, Phase 2 Requirement #6).
@@ -123,12 +124,38 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
       }
     }
 
+    final LotteryDraw? draw = ref
+        .watch(stockControllerProvider)
+        .draws
+        .cast<LotteryDraw?>()
+        .firstWhere(
+          (LotteryDraw? d) => d?.id == widget.batch.drawId,
+          orElse: () => null,
+        );
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           '${widget.batch.series} ${widget.batch.startNumber}–${widget.batch.endNumber}',
           style: context.text.ticketMonoLarge,
         ),
+        actions: <Widget>[
+          if (draw != null && draw.status == DrawStatus.upcoming)
+            IconButton(
+              tooltip: l10n.counterSaleAction,
+              icon: const Icon(Icons.storefront_outlined),
+              onPressed: () async {
+                await MarkCounterSoldSheet.show(
+                  context: context,
+                  draw: draw,
+                  initialSeries: widget.batch.series,
+                  initialStartNumber: widget.batch.startNumber,
+                  initialEndNumber: widget.batch.endNumber,
+                );
+                await _loadTickets();
+              },
+            ),
+        ],
       ),
       body: Column(
         children: <Widget>[

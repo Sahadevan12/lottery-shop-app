@@ -51,6 +51,24 @@ abstract interface class StockRepository {
   Future<void> deleteStockBatch(String batchId);
 
   Future<List<TicketItem>> fetchTicketsForBatch(String batchId);
+
+  Future<List<TicketItem>> fetchTicketsForDraw(String drawId);
+
+  /// Calls `mark_counter_sold` RPC (range-based IN_STOCK -> SOLD_COUNTER).
+  Future<int> markCounterSold({
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  });
+
+  /// Calls `unmark_counter_sold` RPC (range-based SOLD_COUNTER -> IN_STOCK).
+  Future<int> unmarkCounterSold({
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  });
 }
 
 /// Production Supabase implementation of [StockRepository].
@@ -347,5 +365,57 @@ class SupabaseStockRepository implements StockRepository {
         .cast<Map<String, dynamic>>()
         .map(TicketItem.fromJson)
         .toList();
+  }
+
+  @override
+  Future<List<TicketItem>> fetchTicketsForDraw(String drawId) async {
+    final List<dynamic> rows = await _client
+        .from('tickets')
+        .select()
+        .eq('draw_id', drawId)
+        .order('series', ascending: true)
+        .order('number', ascending: true);
+    return rows
+        .cast<Map<String, dynamic>>()
+        .map(TicketItem.fromJson)
+        .toList();
+  }
+
+  @override
+  Future<int> markCounterSold({
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  }) async {
+    final int count = await _client.rpc<int>(
+      'mark_counter_sold',
+      params: <String, dynamic>{
+        'p_draw_id': drawId,
+        'p_series': series.trim().toUpperCase(),
+        'p_start_number': startNumber.trim(),
+        'p_end_number': endNumber.trim(),
+      },
+    );
+    return count;
+  }
+
+  @override
+  Future<int> unmarkCounterSold({
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  }) async {
+    final int count = await _client.rpc<int>(
+      'unmark_counter_sold',
+      params: <String, dynamic>{
+        'p_draw_id': drawId,
+        'p_series': series.trim().toUpperCase(),
+        'p_start_number': startNumber.trim(),
+        'p_end_number': endNumber.trim(),
+      },
+    );
+    return count;
   }
 }

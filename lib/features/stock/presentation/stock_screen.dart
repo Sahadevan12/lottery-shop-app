@@ -13,6 +13,7 @@ import '../domain/stock_range_logic.dart';
 import 'add_stock_sheet.dart';
 import 'batch_detail_screen.dart';
 import 'create_draw_sheet.dart';
+import 'mark_counter_sold_sheet.dart';
 import 'stock_controller.dart';
 
 /// Stock Tab — Tab 2 (§8.3).
@@ -318,6 +319,18 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
+                        if (stockState.selectedDrawBatches.isNotEmpty) ...<Widget>[
+                          AppButton(
+                            label: l10n.counterSaleAction,
+                            variant: AppButtonVariant.secondary,
+                            leadingIcon: Icons.storefront_outlined,
+                            onPressed: () => MarkCounterSoldSheet.show(
+                              context: context,
+                              draw: selectedDraw,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                        ],
                         AppButton(
                           label: l10n.stockEmptyCta,
                           leadingIcon: Icons.add_rounded,

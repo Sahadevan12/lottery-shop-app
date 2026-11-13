@@ -181,7 +181,7 @@ class _ShopSetupScreenState extends ConsumerState<ShopSetupScreen> {
                     child: Text(l10n.shopSetupTitle, style: context.text.h1),
                   ),
                   IconButton(
-                    tooltip: l10n.signOutAction,
+                    tooltip: l10n.logoutAction,
                     onPressed: () {
                       ref.read(authControllerProvider.notifier).signOut();
                     },

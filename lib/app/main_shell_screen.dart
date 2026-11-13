@@ -6,7 +6,7 @@ import '../core/theme/app_spacing.dart';
 import '../core/theme/app_theme.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/results/presentation/results_placeholder_screen.dart';
-import '../features/sellers/presentation/sellers_placeholder_screen.dart';
+import '../features/sellers/presentation/sellers_screen.dart';
 import '../features/settings/presentation/more_screen.dart';
 import '../features/stock/presentation/stock_screen.dart';
 import '../l10n/app_localizations.dart';
@@ -37,9 +37,12 @@ class _MainShellScreenState extends State<MainShellScreen> {
     final AppColors colors = context.colors;
 
     final List<Widget> pages = <Widget>[
-      HomeScreen(onGoToStock: () => _selectTab(1)),
+      HomeScreen(
+        onGoToStock: () => _selectTab(1),
+        onGoToSellers: () => _selectTab(2),
+      ),
       const StockScreen(),
-      const SellersPlaceholderScreen(),
+      const SellersScreen(),
       const ResultsPlaceholderScreen(),
       const MoreScreen(),
     ];

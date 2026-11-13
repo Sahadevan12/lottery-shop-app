@@ -446,4 +446,157 @@ class FakeStockRepository implements StockRepository {
       _ticketsByBatch[batchId] ?? const <TicketItem>[],
     );
   }
+
+  @override
+  Future<List<TicketItem>> fetchTicketsForDraw(String drawId) async {
+    final List<TicketItem> result = <TicketItem>[];
+    for (final List<TicketItem> list in _ticketsByBatch.values) {
+      for (final TicketItem t in list) {
+        if (t.drawId == drawId) {
+          result.add(t);
+        }
+      }
+    }
+    result.sort((TicketItem a, TicketItem b) {
+      final int sCmp = a.series.compareTo(b.series);
+      return sCmp != 0 ? sCmp : a.number.compareTo(b.number);
+    });
+    return result;
+  }
+
+  @override
+  Future<int> markCounterSold({
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  }) async {
+    return _updateCounterRangeStatus(
+      drawId: drawId,
+      series: series,
+      startNumber: startNumber,
+      endNumber: endNumber,
+      expectedCurrent: TicketStatus.inStock,
+      newStatus: TicketStatus.soldCounter,
+    );
+  }
+
+  @override
+  Future<int> unmarkCounterSold({
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  }) async {
+    return _updateCounterRangeStatus(
+      drawId: drawId,
+      series: series,
+      startNumber: startNumber,
+      endNumber: endNumber,
+      expectedCurrent: TicketStatus.soldCounter,
+      newStatus: TicketStatus.inStock,
+    );
+  }
+
+  int _updateCounterRangeStatus({
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+    required TicketStatus expectedCurrent,
+    required TicketStatus newStatus,
+  }) {
+    final LotteryDraw? draw = getDrawById(drawId);
+    if (draw == null) {
+      throw const PostgrestException(message: 'NOT_FOUND');
+    }
+    if (draw.status != DrawStatus.upcoming) {
+      throw const PostgrestException(message: 'DRAW_NOT_OPEN');
+    }
+    final StockRangeEvaluation eval = StockRangeLogic.evaluateRange(
+      series: series,
+      startNumber: startNumber,
+      endNumber: endNumber,
+    );
+    if (!eval.isValid) {
+      throw const PostgrestException(message: 'INVALID_RANGE');
+    }
+
+    final List<({String batchId, int index})> matches =
+        <({String batchId, int index})>[];
+    for (final MapEntry<String, List<TicketItem>> entry
+        in _ticketsByBatch.entries) {
+      final List<TicketItem> list = entry.value;
+      for (int i = 0; i < list.length; i++) {
+        final TicketItem t = list[i];
+        if (t.drawId == drawId &&
+            t.series == eval.normalizedSeries &&
+            t.number.compareTo(eval.paddedStart) >= 0 &&
+            t.number.compareTo(eval.paddedEnd) <= 0 &&
+            t.status == expectedCurrent) {
+          matches.add((batchId: entry.key, index: i));
+        }
+      }
+    }
+
+    if (matches.length != eval.quantity) {
+      throw const PostgrestException(message: 'TICKETS_NOT_AVAILABLE');
+    }
+
+    final Set<String> affectedBatches = <String>{};
+    for (final ({String batchId, int index}) m in matches) {
+      final List<TicketItem> list = _ticketsByBatch[m.batchId]!;
+      final TicketItem old = list[m.index];
+      list[m.index] = TicketItem(
+        id: old.id,
+        shopId: old.shopId,
+        drawId: old.drawId,
+        batchId: old.batchId,
+        series: old.series,
+        number: old.number,
+        status: newStatus,
+      );
+      affectedBatches.add(m.batchId);
+    }
+    for (final String bId in affectedBatches) {
+      _recomputeBatchCounts(bId);
+    }
+    return matches.length;
+  }
+
+  /// Helper for [FakeSellerRepository] to inspect a draw.
+  LotteryDraw? getDrawById(String drawId) {
+    for (final LotteryDraw d in _draws) {
+      if (d.id == drawId) {
+        return d;
+      }
+    }
+    return null;
+  }
+
+  /// Helper for [FakeSellerRepository] to list all tickets across batches.
+  List<TicketItem> getAllTickets() {
+    return <TicketItem>[
+      for (final List<TicketItem> list in _ticketsByBatch.values) ...list,
+    ];
+  }
+
+  /// Helper for [FakeSellerRepository] to atomically update specific ticket IDs.
+  void replaceTicketsById(Map<String, TicketItem> updatedById) {
+    final Set<String> affectedBatches = <String>{};
+    for (final MapEntry<String, List<TicketItem>> entry
+        in _ticketsByBatch.entries) {
+      final List<TicketItem> list = entry.value;
+      for (int i = 0; i < list.length; i++) {
+        final TicketItem? replacement = updatedById[list[i].id];
+        if (replacement != null) {
+          list[i] = replacement;
+          affectedBatches.add(entry.key);
+        }
+      }
+    }
+    for (final String bId in affectedBatches) {
+      _recomputeBatchCounts(bId);
+    }
+  }
 }

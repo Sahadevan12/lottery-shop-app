@@ -3,8 +3,25 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Maps Postgres RPC exception codes (`STOCK_OVERLAP`, `BATCH_IN_USE`, `DRAW_NOT_OPEN`,
-/// `DRAW_EXISTS`, `NOT_FOUND`, `INVALID_RANGE`, `UNAUTHORIZED`, §6.1) to localized messages.
+/// `DRAW_EXISTS`, `NOT_FOUND`, `INVALID_RANGE`, `UNAUTHORIZED`, `TICKETS_NOT_AVAILABLE`,
+/// `TICKETS_NOT_WITH_SELLER`, `INVALID_AMOUNT`, `NOT_REVERSIBLE`, `ALREADY_REVERSED`,
+/// `LEDGER_IMMUTABLE`, `PRICE_LOCKED`, `SELLER_INACTIVE`, §6.1) to localized messages.
 abstract final class RpcErrorMapper {
+  static String extractCode(Object error) {
+    if (error is PostgrestException) {
+      return error.message.toUpperCase();
+    }
+    return error.toString().toUpperCase();
+  }
+
+  /// Returns `true` when an RPC failed because tickets changed state concurrently
+  /// (`TICKETS_NOT_AVAILABLE` or `TICKETS_NOT_WITH_SELLER`).
+  static bool isTicketAvailabilityConflict(Object error) {
+    final String code = extractCode(error);
+    return code.contains('TICKETS_NOT_AVAILABLE') ||
+        code.contains('TICKETS_NOT_WITH_SELLER');
+  }
+
   static String toLocalizedMessage(Object error, AppLocalizations l10n) {
     String code = '';
     String detail = '';
@@ -14,7 +31,8 @@ abstract final class RpcErrorMapper {
       detail = (error.details?.toString() ?? '').trim();
     } else {
       code = error.toString().toUpperCase();
-      final RegExp detailMatch = RegExp(r'DETAIL:\s*(.+)', caseSensitive: false);
+      final RegExp detailMatch =
+          RegExp(r'DETAIL:\s*(.+)', caseSensitive: false);
       final Match? match = detailMatch.firstMatch(error.toString());
       if (match != null) {
         detail = match.group(1)?.trim() ?? '';
@@ -29,6 +47,30 @@ abstract final class RpcErrorMapper {
     }
     if (code.contains('BATCH_IN_USE')) {
       return l10n.errorBatchInUse;
+    }
+    if (code.contains('TICKETS_NOT_AVAILABLE')) {
+      return l10n.errorTicketsNotAvailable;
+    }
+    if (code.contains('TICKETS_NOT_WITH_SELLER')) {
+      return l10n.errorTicketsNotWithSeller;
+    }
+    if (code.contains('INVALID_AMOUNT')) {
+      return l10n.errorInvalidAmount;
+    }
+    if (code.contains('NOT_REVERSIBLE')) {
+      return l10n.errorNotReversible;
+    }
+    if (code.contains('ALREADY_REVERSED')) {
+      return l10n.errorAlreadyReversed;
+    }
+    if (code.contains('LEDGER_IMMUTABLE')) {
+      return l10n.errorLedgerImmutable;
+    }
+    if (code.contains('PRICE_LOCKED')) {
+      return l10n.errorPriceLocked;
+    }
+    if (code.contains('SELLER_INACTIVE')) {
+      return l10n.errorSellerInactive;
     }
     if (code.contains('DRAW_NOT_OPEN')) {
       return l10n.errorDrawNotOpen;

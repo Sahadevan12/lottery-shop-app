@@ -8,6 +8,8 @@ import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/shop_setup_screen.dart';
 import '../features/onboarding/presentation/language_picker_screen.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
+import '../features/sellers/presentation/seller_detail_screen.dart';
+import '../features/sellers/presentation/sellers_screen.dart';
 import '../features/settings/domain/app_preferences.dart';
 import '../features/settings/presentation/app_preferences_controller.dart';
 import '../features/settings/presentation/design_preview_screen.dart';
@@ -154,6 +156,24 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
           key: state.pageKey,
           child: const LotteriesTemplatesScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/sellers',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _buildTransitionPage(
+          key: state.pageKey,
+          child: const SellersScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/sellers/:sellerId',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final String sellerId = state.pathParameters['sellerId'] ?? '';
+          return _buildTransitionPage(
+            key: state.pageKey,
+            child: SellerDetailScreen(sellerId: sellerId),
+          );
+        },
       ),
     ],
   );
