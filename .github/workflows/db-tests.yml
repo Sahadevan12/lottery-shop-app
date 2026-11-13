@@ -1,0 +1,25 @@
+name: Database Migrations & pgTAP Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  db-tests:
+    name: Run Migrations & pgTAP Suite (Local DB)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local database and apply all migrations
+        run: supabase db start
+
+      - name: Run pgTAP tests in supabase/tests
+        run: supabase test db

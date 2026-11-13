@@ -1,0 +1,234 @@
+{
+  "@@locale": "en",
+  "appName": "LuckyLedger",
+  "chooseLanguageTitle": "Choose your language",
+  "chooseLanguageSubtitle": "You can change this anytime in Settings",
+  "languageMalayalam": "മലയാളം",
+  "languageMalayalamSub": "Malayalam",
+  "languageTamil": "தமிழ்",
+  "languageTamilSub": "Tamil",
+  "languageEnglish": "English",
+  "languageEnglishSub": "English",
+  "continueAction": "Continue",
+  "getStartedAction": "Get started",
+  "nextAction": "Next",
+  "skipAction": "Skip",
+  "cancelAction": "Cancel",
+  "confirmAction": "Confirm",
+  "saveAction": "Save",
+  "deleteAction": "Delete",
+  "retryAction": "Retry",
+  "undoAction": "Undo",
+  "seeAllAction": "See all",
+  "searchHint": "Search...",
+  "welcomeSlide1Title": "Track your ticket stock",
+  "welcomeSlide1Body": "Add ticket books in seconds and see what is in stock, with sellers, or sold.",
+  "welcomeSlide2Title": "Manage your sellers' khata",
+  "welcomeSlide2Body": "Issue tickets on credit, record returns and payments, and always know the exact balance due.",
+  "welcomeSlide3Title": "Find winners in 10 seconds",
+  "welcomeSlide3Body": "Enter the 3 PM draw result once to spot every winning ticket and who sold it.",
+  "legalDisclaimer": "This app is an independent business tool for lottery retailers. It is not affiliated with the Kerala State Lotteries Department or any government body. It does not sell lottery tickets. Always verify results with the official Kerala State Lotteries website.",
+  "verifyOfficialResultNote": "Verify with official result",
+  "loginTitle": "Sign in to your shop",
+  "loginSubtitle": "Enter your 10-digit mobile number and 6-digit PIN",
+  "phoneLabel": "Mobile number",
+  "phoneHint": "98765 43210",
+  "phonePrefix": "+91",
+  "pinLabel": "6-digit PIN",
+  "signInAction": "Sign in / Continue",
+  "forgotPinAction": "Forgot PIN?",
+  "forgotPinDialogTitle": "Reset your PIN",
+  "forgotPinDialogBody": "Please contact LuckyLedger Retailer Support with your registered mobile number and shop agent code to reset your PIN.",
+  "contactSupportClose": "Got it",
+  "invalidPhoneError": "Enter a valid 10-digit mobile number",
+  "invalidPinError": "Enter a 6-digit numeric PIN",
+  "shopSetupTitle": "Set up your shop",
+  "shopSetupSubtitle": "We will create default weekly lotteries and prize templates for your shop.",
+  "shopNameLabel": "Shop name",
+  "shopNameHint": "e.g. Sri Lakshmi Agencies",
+  "ownerNameLabel": "Owner name",
+  "ownerNameHint": "e.g. Ramesh Nair",
+  "districtLabel": "District",
+  "districtHint": "Select district",
+  "agentCodeLabel": "Lottery agent / retailer code (optional)",
+  "agentCodeHint": "e.g. EKM-4821",
+  "shopNameRequiredError": "Please enter your shop name",
+  "ownerNameRequiredError": "Please enter the owner name",
+  "districtRequiredError": "Please select a district",
+  "completeSetupAction": "Create shop & start",
+  "districtThiruvananthapuram": "Thiruvananthapuram",
+  "districtKollam": "Kollam",
+  "districtPathanamthitta": "Pathanamthitta",
+  "districtAlappuzha": "Alappuzha",
+  "districtKottayam": "Kottayam",
+  "districtIdukki": "Idukki",
+  "districtErnakulam": "Ernakulam",
+  "districtThrissur": "Thrissur",
+  "districtPalakkad": "Palakkad",
+  "districtMalappuram": "Malappuram",
+  "districtKozhikode": "Kozhikode",
+  "districtWayanad": "Wayanad",
+  "districtKannur": "Kannur",
+  "districtKasaragod": "Kasaragod",
+  "navHome": "Home",
+  "navStock": "Stock",
+  "navSellers": "Sellers",
+  "navResults": "Results",
+  "navMore": "More",
+  "greetingMorning": "Good morning, {name}",
+  "@greetingMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingAfternoon": "Good afternoon, {name}",
+  "@greetingAfternoon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingEvening": "Good evening, {name}",
+  "@greetingEvening": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncStatusSynced": "Synced ✓",
+  "syncStatusSyncing": "Syncing…",
+  "syncStatusOffline": "Offline",
+  "statTotalTickets": "Total tickets",
+  "statInStock": "In stock",
+  "statWithSellers": "With sellers",
+  "statSoldToday": "Sold today",
+  "statSold": "Sold",
+  "statReturned": "Returned",
+  "statDueFromSellers": "Due from sellers",
+  "homeEmptyTitle": "Your shop is ready",
+  "homeEmptyBody": "Add today's ticket stock to start tracking sales, sellers, and winning numbers.",
+  "homeEmptyCta": "Go to Stock",
+  "stockEmptyTitle": "No ticket stock yet",
+  "stockEmptyBody": "Add your first ticket book range for this draw.",
+  "stockEmptyCta": "Add stock",
+  "createTodayDrawTitle": "Create today's draw",
+  "createTodayDrawBody": "Set up today's {lotteryName} draw to start adding ticket ranges.",
+  "@createTodayDrawBody": {
+    "placeholders": {
+      "lotteryName": {
+        "type": "String"
+      }
+    }
+  },
+  "createDrawTitle": "Create draw",
+  "newDrawChip": "+ New draw",
+  "drawSelectorToday": "Today",
+  "drawSelectorTomorrow": "Tomorrow",
+  "drawSelectorBumper": "Bumper",
+  "lotteryFieldLabel": "Lottery",
+  "drawDateFieldLabel": "Draw date",
+  "drawNumberFieldLabel": "Draw number (e.g. W-845)",
+  "ticketPriceFieldLabel": "Selling price per ticket (₹)",
+  "prizeTemplateFieldLabel": "Prize structure template",
+  "addStockTitle": "Add ticket stock",
+  "seriesFieldLabel": "Series (1–3 letters)",
+  "seriesFieldHint": "KR",
+  "startNumberFieldLabel": "From number (6 digits)",
+  "startNumberFieldHint": "482900",
+  "endNumberFieldLabel": "To number (6 digits)",
+  "endNumberFieldHint": "482999",
+  "costPerTicketFieldLabel": "Purchase cost per ticket (₹)",
+  "costPerTicketFieldHint": "35",
+  "addAnotherRangeLabel": "Add another range after saving",
+  "quantityLabel": "Quantity",
+  "totalCostLabel": "Total cost",
+  "ticketsCountLabel": "{count} tickets",
+  "@ticketsCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "batchAddedSuccess": "Added {count} tickets ({range})",
+  "@batchAddedSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteBatchTitle": "Delete this ticket batch?",
+  "deleteBatchBody": "This will remove {range} ({count} tickets) from your stock.",
+  "@deleteBatchBody": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "batchDeletedSuccess": "Batch deleted",
+  "batchDetailTitle": "Batch tickets",
+  "filterAll": "All",
+  "statusInStock": "In stock",
+  "statusWithSeller": "With seller",
+  "statusSold": "Sold",
+  "statusReturned": "Returned",
+  "lotteriesTemplatesTitle": "Lotteries & Prize Templates",
+  "lotteriesTemplatesSubtitle": "Edit weekly lotteries, bumper draws, and prize tiers",
+  "lotteriesTab": "Lotteries",
+  "prizeTemplatesTab": "Prize Templates",
+  "addLotteryAction": "Add lottery",
+  "editLotteryTitle": "Edit lottery",
+  "lotteryNameLabel": "Lottery name",
+  "lotteryCodeLabel": "Short code (e.g. W, KR)",
+  "isBumperLabel": "Bumper lottery",
+  "sellersEmptyTitle": "No sellers added yet",
+  "sellersEmptyBody": "Add walking sellers to track issued tickets and khata balances.",
+  "sellersEmptyCta": "Add seller",
+  "resultsEmptyTitle": "No draw results yet",
+  "resultsEmptyBody": "Enter the 3:00 PM draw results to check all your tickets in seconds.",
+  "resultsEmptyCta": "Enter result",
+  "moreTitle": "More & Settings",
+  "settingsSectionTitle": "Settings",
+  "languageSettingLabel": "Language",
+  "themeSettingLabel": "Appearance",
+  "themeSystem": "System default",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "largeTextSettingLabel": "Large text (1.15×)",
+  "largeTextSettingSubtitle": "Easier reading in bright light",
+  "designPreviewTitle": "Design System Preview",
+  "designPreviewSubtitle": "Interactive token & component showcase (§4)",
+  "aboutSectionTitle": "About & Legal",
+  "logoutAction": "Sign out",
+  "logoutConfirmTitle": "Sign out of LuckyLedger?",
+  "logoutConfirmBody": "Make sure any pending entries are synced before signing out.",
+  "errorStockOverlap": "This ticket range overlaps with an existing batch in your stock.",
+  "errorStockOverlapDetail": "Overlaps with existing stock: {detail}",
+  "@errorStockOverlapDetail": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "errorBatchInUse": "Cannot delete this batch because some tickets have already been issued or sold.",
+  "errorDrawNotOpen": "Stock can only be added while the draw is Upcoming.",
+  "errorDrawExists": "A draw for this lottery on this date already exists.",
+  "errorNotFound": "The requested item was not found in your shop.",
+  "errorInvalidRange": "Enter a valid series and 6-digit range (max 5,000 tickets, end ≥ start).",
+  "errorUnauthorized": "Please sign in again to continue.",
+  "errorGeneric": "Something went wrong. Please try again.",
+  "ticketRetentionNote": "Ticket-level detail is kept for 30 days after a draw closes"
+}

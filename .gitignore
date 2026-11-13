@@ -1,0 +1,14 @@
+# Flutter / Dart ignore rules
+.dart_tool/
+.packages
+build/
+pubspec.lock
+
+# Local environment secrets (never commit!)
+env.json
+.env
+*.env
+
+# Supabase CLI local temp/link state
+supabase/.temp/
+supabase/.branches/

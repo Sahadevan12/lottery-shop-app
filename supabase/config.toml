@@ -1,0 +1,25 @@
+# Supabase CLI configuration (§6.2)
+project_id = "luckyledger"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+enable_signup = true
+
+[auth.email]
+enabled = true
+double_confirm_changes = false
+# §6.2: Disable "Confirm email" because <10-digit-phone>@luckyledger.app emails are internal
+enable_confirmations = false
