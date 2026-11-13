@@ -142,27 +142,70 @@ class FakeSellerRepository implements SellerRepository {
   }
 
   @override
-  Future<List<LedgerEntry>> fetchSellerLedger(String sellerId) async {
+  Future<List<LedgerEntry>> fetchSellerLedger(
+    String sellerId, {
+    int limit = 100,
+    int offset = 0,
+  }) async {
     final List<LedgerEntry> filtered = _entries
         .where((LedgerEntry e) => e.sellerId == sellerId)
         .toList()
       ..sort(
         (LedgerEntry a, LedgerEntry b) => b.createdAt.compareTo(a.createdAt),
       );
-    return LedgerMath.linkReversalPairs(filtered);
+    final List<LedgerEntry> linked = LedgerMath.linkReversalPairs(filtered);
+    if (offset >= linked.length) {
+      return const <LedgerEntry>[];
+    }
+    final int end =
+        (offset + limit) > linked.length ? linked.length : offset + limit;
+    return linked.sublist(offset, end);
   }
 
   @override
-  Future<List<TicketItem>> fetchSellerTickets(String sellerId) async {
-    final List<TicketItem> list = _stockRepository
+  Future<List<TicketItem>> fetchSellerTickets(
+    String sellerId, {
+    String? drawId,
+    TicketStatus? status,
+    int limit = 200,
+    int offset = 0,
+  }) async {
+    Iterable<TicketItem> items = _stockRepository
         .getAllTickets()
-        .where((TicketItem t) => t.sellerId == sellerId)
-        .toList()
+        .where((TicketItem t) => t.sellerId == sellerId);
+    if (drawId != null) {
+      items = items.where((TicketItem t) => t.drawId == drawId);
+    }
+    if (status != null) {
+      items = items.where((TicketItem t) => t.status == status);
+    }
+    final List<TicketItem> list = items.toList()
       ..sort((TicketItem a, TicketItem b) {
         final int sCmp = a.series.compareTo(b.series);
         return sCmp != 0 ? sCmp : a.number.compareTo(b.number);
       });
-    return list;
+    if (offset >= list.length) {
+      return const <TicketItem>[];
+    }
+    final int end = (offset + limit) > list.length ? list.length : offset + limit;
+    return list.sublist(offset, end);
+  }
+
+  @override
+  Future<SellerBalanceBreakdown> fetchSellerBalanceBreakdown(
+    String sellerId,
+  ) async {
+    final List<LedgerEntry> entries = await fetchSellerLedger(
+      sellerId,
+      limit: 10000,
+    );
+    final Map<String, LotteryDraw> drawsById = <String, LotteryDraw>{
+      for (final LotteryDraw d in await _stockRepository.fetchDraws()) d.id: d,
+    };
+    return LedgerMath.computeBalanceBreakdown(
+      entries: entries,
+      drawsById: drawsById,
+    );
   }
 
   @override
@@ -421,5 +464,84 @@ class FakeSellerRepository implements SellerRepository {
       ),
     );
     return reversalId;
+  }
+
+  @override
+  Future<String> issueTicketsByCount({
+    required String sellerId,
+    required String drawId,
+    required int count,
+    String? series,
+  }) async {
+    final List<TicketItem> all =
+        await _stockRepository.fetchTicketsForDraw(drawId);
+    final List<TicketItem>? picked = LedgerMath.pickNextInStockTickets(
+      tickets: all,
+      count: count,
+      seriesFilter: series,
+    );
+    if (picked == null || picked.isEmpty) {
+      throw const PostgrestException(message: 'NOT_ENOUGH_STOCK');
+    }
+    return issueTickets(
+      sellerId: sellerId,
+      drawId: drawId,
+      ticketIds: picked.map((TicketItem t) => t.id).toList(),
+    );
+  }
+
+  @override
+  Future<String> issueTicketsByRange({
+    required String sellerId,
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  }) async {
+    final List<TicketItem> all =
+        await _stockRepository.fetchTicketsForDraw(drawId);
+    final List<TicketItem>? picked = LedgerMath.selectTicketsInRange(
+      tickets: all,
+      series: series,
+      startNumber: startNumber,
+      endNumber: endNumber,
+      requiredStatus: TicketStatus.inStock,
+    );
+    if (picked == null || picked.isEmpty) {
+      throw const PostgrestException(message: 'TICKETS_NOT_AVAILABLE');
+    }
+    return issueTickets(
+      sellerId: sellerId,
+      drawId: drawId,
+      ticketIds: picked.map((TicketItem t) => t.id).toList(),
+    );
+  }
+
+  @override
+  Future<String> returnTicketsByRange({
+    required String sellerId,
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  }) async {
+    final List<TicketItem> all =
+        await _stockRepository.fetchTicketsForDraw(drawId);
+    final List<TicketItem>? picked = LedgerMath.selectTicketsInRange(
+      tickets: all,
+      series: series,
+      startNumber: startNumber,
+      endNumber: endNumber,
+      requiredStatus: TicketStatus.withSeller,
+      requiredSellerId: sellerId,
+    );
+    if (picked == null || picked.isEmpty) {
+      throw const PostgrestException(message: 'TICKETS_NOT_WITH_SELLER');
+    }
+    return returnTickets(
+      sellerId: sellerId,
+      drawId: drawId,
+      ticketIds: picked.map((TicketItem t) => t.id).toList(),
+    );
   }
 }

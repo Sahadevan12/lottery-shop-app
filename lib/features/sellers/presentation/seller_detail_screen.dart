@@ -8,6 +8,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ui_kit.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../results/domain/result_entities.dart';
+import '../../results/presentation/results_controller.dart';
 import '../../stock/domain/stock_entities.dart';
 import '../../stock/presentation/stock_controller.dart';
 import '../domain/ledger_math.dart';
@@ -42,11 +44,14 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    Future<void>.microtask(
-      () => ref
+    Future<void>.microtask(() {
+      ref
           .read(sellersControllerProvider.notifier)
-          .loadSellerDetail(widget.sellerId),
-    );
+          .loadSellerDetail(widget.sellerId);
+      ref
+          .read(resultsControllerProvider.notifier)
+          .loadSellerWins(widget.sellerId);
+    });
   }
 
   @override
@@ -154,6 +159,7 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
     final AppColors colors = context.colors;
     final SellersState sellersState = ref.watch(sellersControllerProvider);
     final StockState stockState = ref.watch(stockControllerProvider);
+    final ResultsState resultsState = ref.watch(resultsControllerProvider);
 
     final SellerSummary? summary = sellersState.summaryFor(widget.sellerId);
     if (summary == null) {
@@ -233,11 +239,19 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
               children: <Widget>[
                 // 1. Tappable Hero Balance Card (§8.4, A.6)
                 AppCard(
-                  onTap: () => BalanceBreakdownSheet.show(
-                    context: context,
-                    sellerName: seller.name,
-                    breakdown: breakdown,
-                  ),
+                  onTap: () async {
+                    final SellerBalanceBreakdown serverBreakdown = await ref
+                        .read(sellersControllerProvider.notifier)
+                        .fetchSellerBalanceBreakdown(seller.id);
+                    if (!context.mounted) {
+                      return;
+                    }
+                    await BalanceBreakdownSheet.show(
+                      context: context,
+                      sellerName: seller.name,
+                      breakdown: serverBreakdown,
+                    );
+                  },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
@@ -348,7 +362,29 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
                           )
                       : null,
                 ),
-                const SellerWinsTab(),
+                SellerWinsTab(
+                  wins: resultsState.winsForSeller(seller.id),
+                  onChangeClaimStatus:
+                      (WinningTicket win, WinClaimStatus status) async {
+                    final bool ok = await ref
+                        .read(resultsControllerProvider.notifier)
+                        .updateWinClaimStatus(
+                          drawId: win.drawId,
+                          winId: win.id,
+                          status: status,
+                          sellerId: seller.id,
+                        );
+                    if (!context.mounted) {
+                      return;
+                    }
+                    if (ok) {
+                      AppSnackbar.show(
+                        context,
+                        message: l10n.claimStatusUpdatedSuccess,
+                      );
+                    }
+                  },
+                ),
               ],
             ),
           ),

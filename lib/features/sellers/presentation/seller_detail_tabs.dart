@@ -6,6 +6,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ui_kit.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../results/domain/result_entities.dart';
+import '../../results/presentation/win_results_view.dart';
 import '../../stock/domain/stock_entities.dart';
 import '../domain/seller_entities.dart';
 
@@ -329,22 +331,52 @@ class SellerTicketsTab extends StatelessWidget {
 }
 
 class SellerWinsTab extends StatelessWidget {
-  const SellerWinsTab({super.key});
+  const SellerWinsTab({
+    super.key,
+    required this.wins,
+    required this.onChangeClaimStatus,
+  });
+
+  final List<WinningTicket> wins;
+  final void Function(WinningTicket win, WinClaimStatus status)
+      onChangeClaimStatus;
 
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
-    return ListView(
-      padding: AppSpacing.screenPadding,
-      children: <Widget>[
-        AppCard(
-          child: EmptyState(
-            title: l10n.sellerWinsEmptyTitle,
-            message: l10n.sellerWinsEmptyBody,
-            icon: Icons.emoji_events_outlined,
+    if (wins.isEmpty) {
+      return ListView(
+        padding: AppSpacing.screenPadding,
+        children: <Widget>[
+          AppCard(
+            child: EmptyState(
+              title: l10n.sellerWinsEmptyTitle,
+              message: l10n.sellerWinsEmptySubtitle,
+              icon: Icons.emoji_events_outlined,
+            ),
           ),
-        ),
-      ],
+        ],
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screenHorizontal,
+        AppSpacing.md,
+        AppSpacing.screenHorizontal,
+        AppSpacing.xxl,
+      ),
+      itemCount: wins.length,
+      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+      itemBuilder: (BuildContext context, int index) {
+        final WinningTicket win = wins[index];
+        return WinTicketCard(
+          win: win,
+          isClosed: false,
+          onChangeClaimStatus: (WinClaimStatus s) =>
+              onChangeClaimStatus(win, s),
+        );
+      },
     );
   }
 }

@@ -11,7 +11,6 @@ import '../../../core/utils/formatters.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../stock/domain/stock_entities.dart';
 import '../../stock/presentation/stock_controller.dart';
-import '../domain/ledger_math.dart';
 import '../domain/seller_entities.dart';
 import 'sellers_controller.dart';
 
@@ -63,7 +62,11 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
   String? _selectedDrawId;
   bool _byCountMode = true;
   bool _isLoadingTickets = false;
-  List<TicketItem> _drawTickets = const <TicketItem>[];
+  TicketRangePreview _preview = const TicketRangePreview(
+    totalCount: 0,
+    rangesSummary: '',
+  );
+  int _previewGeneration = 0;
   String? _statusMessage;
 
   @override
@@ -81,7 +84,7 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
     _selectedDrawId = defaultDraw?.id;
     _seriesController.text = (defaultDraw?.lotteryCode ?? 'KR').toUpperCase();
     if (_selectedDrawId != null) {
-      _refreshDrawTickets(_selectedDrawId!);
+      _refreshPreview();
     }
   }
 
@@ -94,19 +97,84 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
     super.dispose();
   }
 
-  Future<void> _refreshDrawTickets(String drawId) async {
-    setState(() => _isLoadingTickets = true);
-    try {
-      final List<TicketItem> tickets =
-          await ref.read(stockRepositoryProvider).fetchTicketsForDraw(drawId);
+  Future<void> _refreshPreview() async {
+    final String? drawId = _selectedDrawId;
+    if (drawId == null) {
+      return;
+    }
+    final int gen = ++_previewGeneration;
+    final String series = _seriesController.text.trim().toUpperCase();
+    if (_byCountMode) {
+      final int? count = int.tryParse(_countController.text.trim());
+      if (count == null || count <= 0) {
+        if (mounted) {
+          setState(() {
+            _preview = const TicketRangePreview(
+              totalCount: 0,
+              rangesSummary: '',
+            );
+            _isLoadingTickets = false;
+          });
+        }
+        return;
+      }
+      setState(() => _isLoadingTickets = true);
+      try {
+        final TicketRangePreview preview =
+            await ref.read(stockRepositoryProvider).previewTickets(
+                  drawId: drawId,
+                  mode: 'COUNT',
+                  count: count,
+                  series: series.isEmpty ? null : series,
+                  status: TicketStatus.inStock,
+                );
+        if (mounted && gen == _previewGeneration) {
+          setState(() {
+            _preview = preview;
+            _isLoadingTickets = false;
+          });
+        }
+      } catch (_) {
+        if (mounted && gen == _previewGeneration) {
+          setState(() => _isLoadingTickets = false);
+        }
+      }
+      return;
+    }
+
+    final String start = _startController.text.trim();
+    final String end = _endController.text.trim();
+    if (series.isEmpty || start.length != 6 || end.length != 6) {
       if (mounted) {
         setState(() {
-          _drawTickets = tickets;
+          _preview = const TicketRangePreview(
+            totalCount: 0,
+            rangesSummary: '',
+          );
+          _isLoadingTickets = false;
+        });
+      }
+      return;
+    }
+    setState(() => _isLoadingTickets = true);
+    try {
+      final TicketRangePreview preview =
+          await ref.read(stockRepositoryProvider).previewTickets(
+                drawId: drawId,
+                mode: 'RANGE',
+                series: series,
+                startNumber: start,
+                endNumber: end,
+                status: TicketStatus.inStock,
+              );
+      if (mounted && gen == _previewGeneration) {
+        setState(() {
+          _preview = preview;
           _isLoadingTickets = false;
         });
       }
     } catch (_) {
-      if (mounted) {
+      if (mounted && gen == _previewGeneration) {
         setState(() => _isLoadingTickets = false);
       }
     }
@@ -121,25 +189,6 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
     return null;
   }
 
-  List<TicketItem>? _previewSelection() {
-    if (_byCountMode) {
-      final int count = int.tryParse(_countController.text.trim()) ?? 0;
-      final String seriesFilter = _seriesController.text.trim();
-      return LedgerMath.pickNextInStockTickets(
-        tickets: _drawTickets,
-        count: count,
-        seriesFilter: seriesFilter.isEmpty ? null : seriesFilter,
-      );
-    }
-    return LedgerMath.selectTicketsInRange(
-      tickets: _drawTickets,
-      series: _seriesController.text,
-      startNumber: _startController.text,
-      endNumber: _endController.text,
-      requiredStatus: TicketStatus.inStock,
-    );
-  }
-
   Future<void> _submit(LotteryDraw? draw) async {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final String? sellerId = _selectedSellerId;
@@ -148,22 +197,42 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
       return;
     }
 
-    final List<TicketItem>? selected = _previewSelection();
-    if (selected == null || selected.isEmpty) {
-      setState(
-        () => _statusMessage =
-            _byCountMode ? l10n.notEnoughStockError : l10n.errorInvalidRange,
+    final SellersController controller =
+        ref.read(sellersControllerProvider.notifier);
+    bool ok = false;
+    final int expectedCount = _preview.totalCount;
+    if (_byCountMode) {
+      final int? count = int.tryParse(_countController.text.trim());
+      if (count == null || count <= 0 || expectedCount < count) {
+        setState(() => _statusMessage = l10n.notEnoughStockError);
+        return;
+      }
+      final String series = _seriesController.text.trim().toUpperCase();
+      ok = await controller.issueTicketsByCount(
+        sellerId: sellerId,
+        drawId: draw.id,
+        count: count,
+        series: series.isEmpty ? null : series,
       );
-      return;
+    } else {
+      final String series = _seriesController.text.trim().toUpperCase();
+      final String start = _startController.text.trim();
+      final String end = _endController.text.trim();
+      if (series.isEmpty ||
+          start.length != 6 ||
+          end.length != 6 ||
+          expectedCount == 0) {
+        setState(() => _statusMessage = l10n.errorInvalidRange);
+        return;
+      }
+      ok = await controller.issueTicketsByRange(
+        sellerId: sellerId,
+        drawId: draw.id,
+        series: series,
+        startNumber: start,
+        endNumber: end,
+      );
     }
-
-    final bool ok = await ref
-        .read(sellersControllerProvider.notifier)
-        .issueTickets(
-          sellerId: sellerId,
-          drawId: draw.id,
-          ticketIds: selected.map((TicketItem t) => t.id).toList(),
-        );
 
     if (!mounted) {
       return;
@@ -178,7 +247,7 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
         );
       });
       if (RpcErrorMapper.isTicketAvailabilityConflict(rawErr ?? '')) {
-        await _refreshDrawTickets(draw.id);
+        await _refreshPreview();
       }
       return;
     }
@@ -186,7 +255,7 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
     AppSnackbar.show(
       context,
       message: l10n.ticketsIssuedSuccess(
-        AppFormatters.count(selected.length),
+        AppFormatters.count(expectedCount),
       ),
     );
     Navigator.of(context).pop();
@@ -204,8 +273,7 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
         .where((LotteryDraw d) => d.status == DrawStatus.upcoming)
         .toList();
     final LotteryDraw? draw = _currentDraw(openDraws);
-    final List<TicketItem>? preview = _previewSelection();
-    final int count = preview?.length ?? 0;
+    final int count = _preview.totalCount;
     final int totalPaise = count * (draw?.ticketPricePaise ?? 0);
 
     return Column(
@@ -255,7 +323,7 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
                             (d.lotteryCode ?? 'KR').toUpperCase();
                         _statusMessage = null;
                       });
-                      _refreshDrawTickets(d.id);
+                      _refreshPreview();
                     },
                   ),
                   const SizedBox(width: AppSpacing.sm),
@@ -271,10 +339,13 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
               child: AppChip(
                 label: l10n.issueModeByCount,
                 selected: _byCountMode,
-                onTap: () => setState(() {
-                  _byCountMode = true;
-                  _statusMessage = null;
-                }),
+                onTap: () {
+                  setState(() {
+                    _byCountMode = true;
+                    _statusMessage = null;
+                  });
+                  _refreshPreview();
+                },
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -282,10 +353,13 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
               child: AppChip(
                 label: l10n.issueModeByRange,
                 selected: !_byCountMode,
-                onTap: () => setState(() {
-                  _byCountMode = false;
-                  _statusMessage = null;
-                }),
+                onTap: () {
+                  setState(() {
+                    _byCountMode = false;
+                    _statusMessage = null;
+                  });
+                  _refreshPreview();
+                },
               ),
             ),
           ],
@@ -304,7 +378,10 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
                   ],
-                  onChanged: (_) => setState(() => _statusMessage = null),
+                  onChanged: (_) {
+                    setState(() => _statusMessage = null);
+                    _refreshPreview();
+                  },
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -317,15 +394,18 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
                   useMonoFont: true,
                   maxLength: 3,
                   textCapitalization: TextCapitalization.characters,
-                  onChanged: (_) => setState(() => _statusMessage = null),
+                  onChanged: (_) {
+                    setState(() => _statusMessage = null);
+                    _refreshPreview();
+                  },
                 ),
               ),
             ],
           ),
-          if (preview != null && preview.isNotEmpty) ...<Widget>[
+          if ((_preview.rangesSummary ?? '').isNotEmpty) ...<Widget>[
             const SizedBox(height: AppSpacing.sm),
             Text(
-              '${l10n.nextTicketsPreviewLabel} ${LedgerMath.summarizeTicketRanges(preview)}',
+              '${l10n.nextTicketsPreviewLabel} ${_preview.rangesSummary}',
               style: context.text.ticketMono.copyWith(color: colors.primary),
             ),
           ],
@@ -337,7 +417,10 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
             useMonoFont: true,
             maxLength: 3,
             textCapitalization: TextCapitalization.characters,
-            onChanged: (_) => setState(() => _statusMessage = null),
+            onChanged: (_) {
+              setState(() => _statusMessage = null);
+              _refreshPreview();
+            },
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
@@ -353,7 +436,10 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
                   ],
-                  onChanged: (_) => setState(() => _statusMessage = null),
+                  onChanged: (_) {
+                    setState(() => _statusMessage = null);
+                    _refreshPreview();
+                  },
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -368,11 +454,21 @@ class _GiveTicketsSheetState extends ConsumerState<GiveTicketsSheet> {
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
                   ],
-                  onChanged: (_) => setState(() => _statusMessage = null),
+                  onChanged: (_) {
+                    setState(() => _statusMessage = null);
+                    _refreshPreview();
+                  },
                 ),
               ),
             ],
           ),
+          if ((_preview.rangesSummary ?? '').isNotEmpty) ...<Widget>[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '${l10n.nextTicketsPreviewLabel} ${_preview.rangesSummary}',
+              style: context.text.ticketMono.copyWith(color: colors.primary),
+            ),
+          ],
         ],
         const SizedBox(height: AppSpacing.lg),
         AppCard(

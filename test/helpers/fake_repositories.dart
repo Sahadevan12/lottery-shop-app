@@ -2,6 +2,7 @@ import 'package:lucky_ledger/core/utils/formatters.dart';
 import 'package:lucky_ledger/core/utils/validators.dart';
 import 'package:lucky_ledger/features/auth/data/auth_repository.dart';
 import 'package:lucky_ledger/features/auth/domain/shop_profile.dart';
+import 'package:lucky_ledger/features/sellers/domain/ledger_math.dart';
 import 'package:lucky_ledger/features/stock/data/stock_repository.dart';
 import 'package:lucky_ledger/features/stock/domain/stock_entities.dart';
 import 'package:lucky_ledger/features/stock/domain/stock_range_logic.dart';
@@ -441,13 +442,31 @@ class FakeStockRepository implements StockRepository {
   }
 
   @override
-  Future<List<TicketItem>> fetchTicketsForBatch(String batchId) async {
-    return List<TicketItem>.unmodifiable(
-      _ticketsByBatch[batchId] ?? const <TicketItem>[],
-    );
+  Future<List<TicketItem>> fetchTicketsForBatch(
+    String batchId, {
+    int limit = 200,
+    int offset = 0,
+    TicketStatus? status,
+    String? searchNumber,
+  }) async {
+    Iterable<TicketItem> items =
+        _ticketsByBatch[batchId] ?? const <TicketItem>[];
+    if (status != null) {
+      items = items.where((TicketItem t) => t.status == status);
+    }
+    final String q = (searchNumber ?? '').trim();
+    if (q.isNotEmpty) {
+      items = items.where((TicketItem t) => t.number.contains(q));
+    }
+    final List<TicketItem> list = items.toList();
+    if (offset >= list.length) {
+      return const <TicketItem>[];
+    }
+    final int end = (offset + limit) > list.length ? list.length : offset + limit;
+    return List<TicketItem>.unmodifiable(list.sublist(offset, end));
   }
 
-  @override
+  /// Test-only helper for inspecting all tickets in a draw.
   Future<List<TicketItem>> fetchTicketsForDraw(String drawId) async {
     final List<TicketItem> result = <TicketItem>[];
     for (final List<TicketItem> list in _ticketsByBatch.values) {
@@ -462,6 +481,55 @@ class FakeStockRepository implements StockRepository {
       return sCmp != 0 ? sCmp : a.number.compareTo(b.number);
     });
     return result;
+  }
+
+  @override
+  Future<TicketRangePreview> previewTickets({
+    required String drawId,
+    required String mode,
+    int? count,
+    String? series,
+    String? startNumber,
+    String? endNumber,
+    TicketStatus status = TicketStatus.inStock,
+    String? sellerId,
+  }) async {
+    final List<TicketItem> all = await fetchTicketsForDraw(drawId);
+    final TicketStatus reqStatus = status;
+    final List<TicketItem> matching;
+    if (mode == 'COUNT') {
+      final String? s =
+          (series == null || series.trim().isEmpty) ? null : series.trim().toUpperCase();
+      matching = all
+          .where(
+            (TicketItem t) =>
+                t.status == reqStatus &&
+                (s == null || t.series == s) &&
+                (sellerId == null || t.sellerId == sellerId),
+          )
+          .take(count ?? 0)
+          .toList();
+    } else {
+      final String s = (series ?? '').trim().toUpperCase();
+      final int? start = int.tryParse((startNumber ?? '').trim());
+      final int? end = int.tryParse((endNumber ?? '').trim());
+      if (s.isEmpty || start == null || end == null || end < start) {
+        return const TicketRangePreview(totalCount: 0, rangesSummary: '');
+      }
+      matching = all.where((TicketItem t) {
+        final int? n = int.tryParse(t.number);
+        return t.series == s &&
+            n != null &&
+            n >= start &&
+            n <= end &&
+            t.status == reqStatus &&
+            (sellerId == null || t.sellerId == sellerId);
+      }).toList();
+    }
+    return TicketRangePreview(
+      totalCount: matching.length,
+      rangesSummary: LedgerMath.summarizeTicketRanges(matching),
+    );
   }
 
   @override

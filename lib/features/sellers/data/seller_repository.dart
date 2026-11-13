@@ -24,22 +24,59 @@ abstract interface class SellerRepository {
 
   Future<void> deleteSeller(String sellerId);
 
-  Future<List<LedgerEntry>> fetchSellerLedger(String sellerId);
+  Future<List<LedgerEntry>> fetchSellerLedger(
+    String sellerId, {
+    int offset = 0,
+    int limit = 100,
+  });
 
-  Future<List<TicketItem>> fetchSellerTickets(String sellerId);
+  Future<List<TicketItem>> fetchSellerTickets(
+    String sellerId, {
+    int offset = 0,
+    int limit = 200,
+  });
 
-  /// Calls `issue_tickets` RPC (§6.5, §7.2).
+  /// Calls `get_seller_balance_breakdown` RPC (server-side aggregate, no 1000-row cap).
+  Future<SellerBalanceBreakdown> fetchSellerBalanceBreakdown(String sellerId);
+
+  /// Calls `issue_tickets` RPC (tap-to-select <= 500 IDs).
   Future<String> issueTickets({
     required String sellerId,
     required String drawId,
     required List<String> ticketIds,
   });
 
-  /// Calls `return_tickets` RPC (§6.5, §7.3).
+  /// Calls `issue_tickets_by_count` RPC (server-side up to 5,000 tickets).
+  Future<String> issueTicketsByCount({
+    required String sellerId,
+    required String drawId,
+    required int count,
+    String? series,
+  });
+
+  /// Calls `issue_tickets_by_range` RPC (server-side up to 5,000 tickets).
+  Future<String> issueTicketsByRange({
+    required String sellerId,
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  });
+
+  /// Calls `return_tickets` RPC (tap-to-select <= 500 IDs).
   Future<String> returnTickets({
     required String sellerId,
     required String drawId,
     required List<String> ticketIds,
+  });
+
+  /// Calls `return_tickets_by_range` RPC (server-side up to 5,000 tickets).
+  Future<String> returnTicketsByRange({
+    required String sellerId,
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
   });
 
   /// Calls `record_payment` RPC (§6.5, §7.4).
@@ -100,14 +137,6 @@ class SupabaseSellerRepository implements SellerRepository {
     final List<dynamic> balanceRows =
         await _client.rpc<List<dynamic>>('seller_balances');
 
-    final List<dynamic> entrySellerRows =
-        await _client.from('ledger_entries').select('seller_id');
-
-    final Set<String> sellersWithEntries = <String>{
-      for (final dynamic r in entrySellerRows)
-        (r as Map<String, dynamic>)['seller_id'] as String,
-    };
-
     final Map<String, Map<String, dynamic>> balancesById =
         <String, Map<String, dynamic>>{
       for (final dynamic r in balanceRows)
@@ -124,6 +153,8 @@ class SupabaseSellerRepository implements SellerRepository {
           : AppFormatters.parseNumericToPaise(bal['balance']);
       final int ticketsWithSeller =
           (bal?['tickets_with_seller'] as int?) ?? 0;
+      final bool hasLedgerHistory =
+          (bal?['has_ledger_history'] as bool?) ?? false;
       final DateTime lastActivity = bal?['last_activity_at'] == null
           ? profile.createdAt
           : DateTime.parse(bal!['last_activity_at'] as String);
@@ -132,7 +163,7 @@ class SupabaseSellerRepository implements SellerRepository {
         seller: profile,
         balancePaise: balancePaise,
         ticketsWithSeller: ticketsWithSeller,
-        hasLedgerHistory: sellersWithEntries.contains(profile.id),
+        hasLedgerHistory: hasLedgerHistory,
         lastActivityAt: lastActivity,
       );
     }).toList();
@@ -187,12 +218,17 @@ class SupabaseSellerRepository implements SellerRepository {
   }
 
   @override
-  Future<List<LedgerEntry>> fetchSellerLedger(String sellerId) async {
+  Future<List<LedgerEntry>> fetchSellerLedger(
+    String sellerId, {
+    int offset = 0,
+    int limit = 100,
+  }) async {
     final List<dynamic> rows = await _client
         .from('ledger_entries')
         .select()
         .eq('seller_id', sellerId)
-        .order('created_at', ascending: false);
+        .order('created_at', ascending: false)
+        .range(offset, offset + limit - 1);
 
     final List<LedgerEntry> parsed = rows
         .cast<Map<String, dynamic>>()
@@ -202,18 +238,80 @@ class SupabaseSellerRepository implements SellerRepository {
   }
 
   @override
-  Future<List<TicketItem>> fetchSellerTickets(String sellerId) async {
+  Future<List<TicketItem>> fetchSellerTickets(
+    String sellerId, {
+    int offset = 0,
+    int limit = 200,
+  }) async {
     final List<dynamic> rows = await _client
         .from('tickets')
         .select()
         .eq('seller_id', sellerId)
         .order('series', ascending: true)
-        .order('number', ascending: true);
+        .order('number', ascending: true)
+        .range(offset, offset + limit - 1);
 
     return rows
         .cast<Map<String, dynamic>>()
         .map(TicketItem.fromJson)
         .toList();
+  }
+
+  @override
+  Future<SellerBalanceBreakdown> fetchSellerBalanceBreakdown(
+    String sellerId,
+  ) async {
+    final List<dynamic> rows = await _client.rpc<List<dynamic>>(
+      'get_seller_balance_breakdown',
+      params: <String, dynamic>{'p_seller_id': sellerId},
+    );
+
+    final List<DrawBreakdownRow> drawRows = <DrawBreakdownRow>[];
+    int paymentsTotal = 0;
+    int generalAdjustments = 0;
+    int grandTotal = 0;
+
+    for (final Map<String, dynamic> r in rows.cast<Map<String, dynamic>>()) {
+      final String kind = (r['row_kind'] as String?) ?? '';
+      if (kind == 'DRAW' && r['draw_id'] != null) {
+        drawRows.add(
+          DrawBreakdownRow(
+            drawId: r['draw_id'] as String,
+            drawLabel: (r['draw_label'] as String?) ?? 'Draw',
+            drawDate: r['draw_date'] == null
+                ? null
+                : DateTime.parse(r['draw_date'] as String),
+            issuedPaise: AppFormatters.parseNumericToPaise(r['issued_amount']),
+            issuedTicketCount: (r['issued_ticket_count'] as int?) ?? 0,
+            returnedPaise:
+                AppFormatters.parseNumericToPaise(r['returned_amount']),
+            returnedTicketCount: (r['returned_ticket_count'] as int?) ?? 0,
+            prizePaidPaise:
+                AppFormatters.parseNumericToPaise(r['prize_paid_amount']),
+            drawAdjustmentsPaise:
+                AppFormatters.parseNumericToPaise(r['draw_adjustments_amount']),
+          ),
+        );
+      } else if (kind == 'SUMMARY') {
+        paymentsTotal = AppFormatters.parseNumericToPaise(r['payments_total']);
+        generalAdjustments =
+            AppFormatters.parseNumericToPaise(r['general_adjustments_total']);
+        grandTotal = AppFormatters.parseNumericToPaise(r['grand_total']);
+      }
+    }
+
+    drawRows.sort((DrawBreakdownRow a, DrawBreakdownRow b) {
+      final DateTime ad = a.drawDate ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final DateTime bd = b.drawDate ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return bd.compareTo(ad);
+    });
+
+    return SellerBalanceBreakdown(
+      drawRows: drawRows,
+      paymentsTotalPaise: paymentsTotal,
+      generalAdjustmentsPaise: generalAdjustments,
+      grandTotalPaise: grandTotal,
+    );
   }
 
   @override
@@ -234,6 +332,46 @@ class SupabaseSellerRepository implements SellerRepository {
   }
 
   @override
+  Future<String> issueTicketsByCount({
+    required String sellerId,
+    required String drawId,
+    required int count,
+    String? series,
+  }) async {
+    final String entryId = await _client.rpc<String>(
+      'issue_tickets_by_count',
+      params: <String, dynamic>{
+        'p_seller_id': sellerId,
+        'p_draw_id': drawId,
+        'p_count': count,
+        'p_series': series,
+      },
+    );
+    return entryId;
+  }
+
+  @override
+  Future<String> issueTicketsByRange({
+    required String sellerId,
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  }) async {
+    final String entryId = await _client.rpc<String>(
+      'issue_tickets_by_range',
+      params: <String, dynamic>{
+        'p_seller_id': sellerId,
+        'p_draw_id': drawId,
+        'p_series': series.trim().toUpperCase(),
+        'p_start_number': startNumber.trim(),
+        'p_end_number': endNumber.trim(),
+      },
+    );
+    return entryId;
+  }
+
+  @override
   Future<String> returnTickets({
     required String sellerId,
     required String drawId,
@@ -245,6 +383,27 @@ class SupabaseSellerRepository implements SellerRepository {
         'p_seller_id': sellerId,
         'p_draw_id': drawId,
         'p_ticket_ids': ticketIds,
+      },
+    );
+    return entryId;
+  }
+
+  @override
+  Future<String> returnTicketsByRange({
+    required String sellerId,
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  }) async {
+    final String entryId = await _client.rpc<String>(
+      'return_tickets_by_range',
+      params: <String, dynamic>{
+        'p_seller_id': sellerId,
+        'p_draw_id': drawId,
+        'p_series': series.trim().toUpperCase(),
+        'p_start_number': startNumber.trim(),
+        'p_end_number': endNumber.trim(),
       },
     );
     return entryId;

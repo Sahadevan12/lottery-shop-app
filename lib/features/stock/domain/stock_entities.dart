@@ -255,3 +255,14 @@ class DrawStockSummary {
   final int sold;
   final int returnedUnsold;
 }
+
+@immutable
+class TicketRangePreview {
+  const TicketRangePreview({
+    this.totalCount = 0,
+    this.rangesSummary,
+  });
+
+  final int totalCount;
+  final String? rangesSummary;
+}

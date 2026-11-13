@@ -261,7 +261,7 @@ void main() {
         } else {
           // Reverse a random reversible entry
           final List<LedgerEntry> currentLedger =
-              await sellerRepo.fetchSellerLedger(seller.id);
+              await sellerRepo.fetchSellerLedger(seller.id, limit: 10000);
           final List<LedgerEntry> reversible =
               currentLedger.where((LedgerEntry e) => e.canReverse).toList();
           if (reversible.isNotEmpty) {
@@ -273,7 +273,7 @@ void main() {
 
         // Invariant check after every step
         final List<LedgerEntry> ledger =
-            await sellerRepo.fetchSellerLedger(seller.id);
+            await sellerRepo.fetchSellerLedger(seller.id, limit: 10000);
         final int expectedSum =
             ledger.fold<int>(0, (int acc, LedgerEntry e) => acc + e.amountPaise);
         final List<SellerSummary> summaries =

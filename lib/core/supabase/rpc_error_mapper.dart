@@ -22,6 +22,23 @@ abstract final class RpcErrorMapper {
         code.contains('TICKETS_NOT_WITH_SELLER');
   }
 
+  /// Returns `true` when `check_draw` / `save_draw_results_and_check` raised
+  /// `CLAIMED_WIN_AFFECTED` and requires explicit user confirmation (`p_force`).
+  static bool isClaimedWinAffected(Object error) {
+    return extractCode(error).contains('CLAIMED_WIN_AFFECTED');
+  }
+
+  /// Extracts the `DETAIL:` string from a [PostgrestException] or error message.
+  static String extractDetail(Object error) {
+    if (error is PostgrestException) {
+      return (error.details?.toString() ?? '').trim();
+    }
+    final RegExp detailMatch =
+        RegExp(r'DETAIL:\s*(.+)', caseSensitive: false);
+    final Match? match = detailMatch.firstMatch(error.toString());
+    return match?.group(1)?.trim() ?? '';
+  }
+
   static String toLocalizedMessage(Object error, AppLocalizations l10n) {
     String code = '';
     String detail = '';
@@ -71,6 +88,24 @@ abstract final class RpcErrorMapper {
     }
     if (code.contains('SELLER_INACTIVE')) {
       return l10n.errorSellerInactive;
+    }
+    if (code.contains('DRAW_BEFORE_TIME')) {
+      return l10n.errorDrawBeforeTime;
+    }
+    if (code.contains('DRAW_CLOSED')) {
+      return l10n.errorDrawClosed;
+    }
+    if (code.contains('INVALID_RESULT_ENTRY')) {
+      return l10n.errorInvalidResultEntry;
+    }
+    if (code.contains('DUPLICATE_RESULT_ENTRY')) {
+      return l10n.errorDuplicateResultEntry;
+    }
+    if (code.contains('CLAIMED_WIN_AFFECTED')) {
+      return l10n.errorClaimedWinAffected;
+    }
+    if (code.contains('INVALID_CLAIM_STATUS')) {
+      return l10n.errorInvalidClaimStatus;
     }
     if (code.contains('DRAW_NOT_OPEN')) {
       return l10n.errorDrawNotOpen;

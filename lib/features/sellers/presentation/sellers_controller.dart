@@ -283,6 +283,102 @@ class SellersController extends Notifier<SellersState> {
     }
   }
 
+  Future<bool> issueTicketsByCount({
+    required String sellerId,
+    required String drawId,
+    required int count,
+    String? series,
+  }) async {
+    state = state.copyWith(isSubmitting: true, clearError: true);
+    try {
+      final SellerRepository repo = ref.read(sellerRepositoryProvider);
+      final String entryId = await repo.issueTicketsByCount(
+        sellerId: sellerId,
+        drawId: drawId,
+        count: count,
+        series: series,
+      );
+      await loadSellerDetail(sellerId);
+      await ref.read(stockControllerProvider.notifier).selectDraw(drawId);
+      state = state.copyWith(
+        isSubmitting: false,
+        lastCreatedEntryId: entryId,
+      );
+      return true;
+    } catch (err) {
+      state = state.copyWith(isSubmitting: false, errorMessage: err.toString());
+      return false;
+    }
+  }
+
+  Future<bool> issueTicketsByRange({
+    required String sellerId,
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  }) async {
+    state = state.copyWith(isSubmitting: true, clearError: true);
+    try {
+      final SellerRepository repo = ref.read(sellerRepositoryProvider);
+      final String entryId = await repo.issueTicketsByRange(
+        sellerId: sellerId,
+        drawId: drawId,
+        series: series,
+        startNumber: startNumber,
+        endNumber: endNumber,
+      );
+      await loadSellerDetail(sellerId);
+      await ref.read(stockControllerProvider.notifier).selectDraw(drawId);
+      state = state.copyWith(
+        isSubmitting: false,
+        lastCreatedEntryId: entryId,
+      );
+      return true;
+    } catch (err) {
+      state = state.copyWith(isSubmitting: false, errorMessage: err.toString());
+      return false;
+    }
+  }
+
+  Future<bool> returnTicketsByRange({
+    required String sellerId,
+    required String drawId,
+    required String series,
+    required String startNumber,
+    required String endNumber,
+  }) async {
+    state = state.copyWith(isSubmitting: true, clearError: true);
+    try {
+      final SellerRepository repo = ref.read(sellerRepositoryProvider);
+      final String entryId = await repo.returnTicketsByRange(
+        sellerId: sellerId,
+        drawId: drawId,
+        series: series,
+        startNumber: startNumber,
+        endNumber: endNumber,
+      );
+      await loadSellerDetail(sellerId);
+      await ref.read(stockControllerProvider.notifier).selectDraw(drawId);
+      state = state.copyWith(
+        isSubmitting: false,
+        lastCreatedEntryId: entryId,
+      );
+      return true;
+    } catch (err) {
+      state = state.copyWith(isSubmitting: false, errorMessage: err.toString());
+      return false;
+    }
+  }
+
+  Future<SellerBalanceBreakdown> fetchSellerBalanceBreakdown(
+    String sellerId,
+  ) {
+    return ref.read(sellerRepositoryProvider).fetchSellerBalanceBreakdown(
+          sellerId,
+        );
+  }
+
   Future<String?> recordPayment({
     required String sellerId,
     required int amountPaise,

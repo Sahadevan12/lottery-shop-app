@@ -1,0 +1,32 @@
+name: Flutter Analyze & Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  flutter-tests:
+    name: Analyze & Run Flutter Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Run static analysis
+        run: flutter analyze
+
+      - name: Run unit and widget tests
+        run: flutter test

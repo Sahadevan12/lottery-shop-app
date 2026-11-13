@@ -50,9 +50,25 @@ abstract interface class StockRepository {
   /// Calls `delete_stock_batch` RPC (allowed only when all tickets are IN_STOCK).
   Future<void> deleteStockBatch(String batchId);
 
-  Future<List<TicketItem>> fetchTicketsForBatch(String batchId);
+  Future<List<TicketItem>> fetchTicketsForBatch(
+    String batchId, {
+    TicketStatus? status,
+    String? searchNumber,
+    int offset = 0,
+    int limit = 200,
+  });
 
-  Future<List<TicketItem>> fetchTicketsForDraw(String drawId);
+  /// Calls `preview_tickets` RPC (returns total count + contiguous ranges without 1000-row cap).
+  Future<TicketRangePreview> previewTickets({
+    required String drawId,
+    required String mode, // 'COUNT' | 'RANGE'
+    int? count,
+    String? series,
+    String? startNumber,
+    String? endNumber,
+    TicketStatus status = TicketStatus.inStock,
+    String? sellerId,
+  });
 
   /// Calls `mark_counter_sold` RPC (range-based IN_STOCK -> SOLD_COUNTER).
   Future<int> markCounterSold({
@@ -271,54 +287,27 @@ class SupabaseStockRepository implements StockRepository {
 
   @override
   Future<List<StockBatch>> fetchBatchesForDraw(String drawId) async {
-    final List<dynamic> batchRows = await _client
-        .from('stock_batches')
-        .select()
-        .eq('draw_id', drawId)
-        .order('created_at', ascending: false);
+    final List<dynamic> rows = await _client.rpc<List<dynamic>>(
+      'get_batches_for_draw',
+      params: <String, dynamic>{'p_draw_id': drawId},
+    );
 
-    final List<dynamic> ticketRows = await _client
-        .from('tickets')
-        .select('batch_id, status')
-        .eq('draw_id', drawId);
-
-    final Map<String, Map<TicketStatus, int>> countsByBatch =
-        <String, Map<TicketStatus, int>>{};
-    for (final dynamic raw in ticketRows) {
-      final Map<String, dynamic> row = raw as Map<String, dynamic>;
-      final String bId = row['batch_id'] as String;
-      final TicketStatus st = TicketStatus.fromDb(row['status'] as String);
-      final Map<TicketStatus, int> map =
-          countsByBatch.putIfAbsent(bId, () => <TicketStatus, int>{});
-      map[st] = (map[st] ?? 0) + 1;
-    }
-
-    return batchRows.cast<Map<String, dynamic>>().map((Map<String, dynamic> r) {
-      final String id = r['id'] as String;
-      final int quantity = r['quantity'] as int;
-      final Map<TicketStatus, int> counts =
-          countsByBatch[id] ?? <TicketStatus, int>{};
-      final int inStock = counts[TicketStatus.inStock] ?? 0;
-      final int withSeller = counts[TicketStatus.withSeller] ?? 0;
-      final int sold = (counts[TicketStatus.soldCounter] ?? 0) +
-          (counts[TicketStatus.soldBySeller] ?? 0);
-      final int returned = counts[TicketStatus.returnedUnsold] ?? 0;
-
+    return rows.cast<Map<String, dynamic>>().map((Map<String, dynamic> r) {
       return StockBatch(
-        id: id,
+        id: r['id'] as String,
         shopId: r['shop_id'] as String,
         drawId: r['draw_id'] as String,
         series: (r['series'] as String).trim(),
         startNumber: (r['start_number'] as String).trim(),
         endNumber: (r['end_number'] as String).trim(),
-        quantity: quantity,
+        quantity: r['quantity'] as int,
         costPerTicketPaise: r['cost_per_ticket'] == null
             ? null
             : AppFormatters.parseNumericToPaise(r['cost_per_ticket']),
-        inStockCount: counts.isEmpty ? quantity : inStock,
-        withSellerCount: withSeller,
-        soldCount: sold,
-        returnedCount: returned,
+        inStockCount: (r['in_stock_count'] as int?) ?? 0,
+        withSellerCount: (r['with_seller_count'] as int?) ?? 0,
+        soldCount: (r['sold_count'] as int?) ?? 0,
+        returnedCount: (r['returned_count'] as int?) ?? 0,
       );
     }).toList();
   }
@@ -355,12 +344,35 @@ class SupabaseStockRepository implements StockRepository {
   }
 
   @override
-  Future<List<TicketItem>> fetchTicketsForBatch(String batchId) async {
-    final List<dynamic> rows = await _client
-        .from('tickets')
-        .select()
-        .eq('batch_id', batchId)
-        .order('number', ascending: true);
+  Future<List<TicketItem>> fetchTicketsForBatch(
+    String batchId, {
+    TicketStatus? status,
+    String? searchNumber,
+    int offset = 0,
+    int limit = 200,
+  }) async {
+    dynamic query = _client.from('tickets').select().eq('batch_id', batchId);
+
+    if (status != null) {
+      if (status == TicketStatus.soldCounter) {
+        query = query.inFilter('status', <String>[
+          TicketStatus.soldCounter.dbValue,
+          TicketStatus.soldBySeller.dbValue,
+        ]);
+      } else {
+        query = query.eq('status', status.dbValue);
+      }
+    }
+
+    final String cleanSearch = (searchNumber ?? '').trim();
+    if (cleanSearch.isNotEmpty) {
+      query = query.ilike('number', '%$cleanSearch%');
+    }
+
+    final List<dynamic> rows = await query
+        .order('number', ascending: true)
+        .range(offset, offset + limit - 1);
+
     return rows
         .cast<Map<String, dynamic>>()
         .map(TicketItem.fromJson)
@@ -368,17 +380,37 @@ class SupabaseStockRepository implements StockRepository {
   }
 
   @override
-  Future<List<TicketItem>> fetchTicketsForDraw(String drawId) async {
-    final List<dynamic> rows = await _client
-        .from('tickets')
-        .select()
-        .eq('draw_id', drawId)
-        .order('series', ascending: true)
-        .order('number', ascending: true);
-    return rows
-        .cast<Map<String, dynamic>>()
-        .map(TicketItem.fromJson)
-        .toList();
+  Future<TicketRangePreview> previewTickets({
+    required String drawId,
+    required String mode,
+    int? count,
+    String? series,
+    String? startNumber,
+    String? endNumber,
+    TicketStatus status = TicketStatus.inStock,
+    String? sellerId,
+  }) async {
+    final List<dynamic> rows = await _client.rpc<List<dynamic>>(
+      'preview_tickets',
+      params: <String, dynamic>{
+        'p_draw_id': drawId,
+        'p_mode': mode,
+        'p_count': count,
+        'p_series': series,
+        'p_start_number': startNumber,
+        'p_end_number': endNumber,
+        'p_status': status.dbValue,
+        'p_seller_id': sellerId,
+      },
+    );
+    if (rows.isEmpty) {
+      return const TicketRangePreview();
+    }
+    final Map<String, dynamic> row = rows.first as Map<String, dynamic>;
+    return TicketRangePreview(
+      totalCount: (row['total_count'] as int?) ?? 0,
+      rangesSummary: row['ranges_summary'] as String?,
+    );
   }
 
   @override

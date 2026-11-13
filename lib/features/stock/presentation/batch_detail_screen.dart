@@ -11,8 +11,8 @@ import '../domain/stock_entities.dart';
 import 'mark_counter_sold_sheet.dart';
 import 'stock_controller.dart';
 
-/// Read-only Batch Ticket Grid Screen (§8.3, Phase 2 Requirement #6).
-/// Displays mono ticket numbers with a semantic status dot, search, and status filter chips.
+/// Paginated Batch Ticket Grid Screen (§8.3, Phase 4 Audit #2).
+/// Loads 200 tickets per page using server-side status/number filtering and `.range(...)`.
 class BatchDetailScreen extends ConsumerStatefulWidget {
   const BatchDetailScreen({
     super.key,
@@ -26,38 +26,90 @@ class BatchDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
+  static const int _pageSize = 200;
+
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
   TicketStatus? _selectedStatus;
-  List<TicketItem> _tickets = const <TicketItem>[];
+  List<TicketItem> _tickets = <TicketItem>[];
   bool _isLoading = true;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
 
   @override
   void initState() {
     super.initState();
-    _loadTickets();
+    _scrollController.addListener(_onScroll);
+    _loadFirstPage();
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadTickets() async {
-    setState(() => _isLoading = true);
+  void _onScroll() {
+    if (_isLoadingMore || !_hasMore || !_scrollController.hasClients) {
+      return;
+    }
+    final ScrollPosition pos = _scrollController.position;
+    if (pos.pixels >= pos.maxScrollExtent - 240) {
+      _loadNextPage();
+    }
+  }
+
+  Future<void> _loadFirstPage() async {
+    setState(() {
+      _isLoading = true;
+      _hasMore = true;
+    });
     try {
       final StockRepository repo = ref.read(stockRepositoryProvider);
-      final List<TicketItem> list =
-          await repo.fetchTicketsForBatch(widget.batch.id);
+      final List<TicketItem> page = await repo.fetchTicketsForBatch(
+        widget.batch.id,
+        status: _selectedStatus,
+        searchNumber: _searchController.text,
+        offset: 0,
+        limit: _pageSize,
+      );
       if (mounted) {
         setState(() {
-          _tickets = list;
+          _tickets = page;
+          _hasMore = page.length == _pageSize;
           _isLoading = false;
         });
       }
     } catch (_) {
       if (mounted) {
         setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _loadNextPage() async {
+    setState(() => _isLoadingMore = true);
+    try {
+      final StockRepository repo = ref.read(stockRepositoryProvider);
+      final List<TicketItem> page = await repo.fetchTicketsForBatch(
+        widget.batch.id,
+        status: _selectedStatus,
+        searchNumber: _searchController.text,
+        offset: _tickets.length,
+        limit: _pageSize,
+      );
+      if (mounted) {
+        setState(() {
+          _tickets = <TicketItem>[..._tickets, ...page];
+          _hasMore = page.length == _pageSize;
+          _isLoadingMore = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoadingMore = false);
       }
     }
   }
@@ -80,25 +132,6 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final AppColors colors = context.colors;
-    final String query = _searchController.text.trim();
-
-    final List<TicketItem> filtered = _tickets.where((TicketItem t) {
-      if (_selectedStatus != null) {
-        if (_selectedStatus == TicketStatus.soldCounter) {
-          final bool isSold = t.status == TicketStatus.soldCounter ||
-              t.status == TicketStatus.soldBySeller;
-          if (!isSold) {
-            return false;
-          }
-        } else if (t.status != _selectedStatus) {
-          return false;
-        }
-      }
-      if (query.isNotEmpty && !t.number.contains(query)) {
-        return false;
-      }
-      return true;
-    }).toList();
 
     final List<TicketStatus?> filters = <TicketStatus?>[
       null,
@@ -152,7 +185,7 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
                   initialStartNumber: widget.batch.startNumber,
                   initialEndNumber: widget.batch.endNumber,
                 );
-                await _loadTickets();
+                await _loadFirstPage();
               },
             ),
         ],
@@ -172,15 +205,17 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
               hintText: l10n.searchHint,
               useMonoFont: true,
               keyboardType: TextInputType.number,
-              onChanged: (_) => setState(() {}),
+              onChanged: (_) => _loadFirstPage(),
             ),
           ),
           FilterChipRow<TicketStatus?>(
             items: filters,
             selectedItem: _selectedStatus,
             labelBuilder: filterLabel,
-            onSelected: (TicketStatus? st) =>
-                setState(() => _selectedStatus = st),
+            onSelected: (TicketStatus? st) {
+              setState(() => _selectedStatus = st);
+              _loadFirstPage();
+            },
           ),
           const SizedBox(height: AppSpacing.md),
           Expanded(
@@ -190,6 +225,7 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
                     child: SkeletonLoader.list(itemCount: 4, itemHeight: 56),
                   )
                 : GridView.builder(
+                    controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(
                       AppSpacing.screenHorizontal,
                       AppSpacing.xs,
@@ -203,9 +239,9 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
                       crossAxisSpacing: AppSpacing.sm,
                       childAspectRatio: 2.8,
                     ),
-                    itemCount: filtered.length,
+                    itemCount: _tickets.length,
                     itemBuilder: (BuildContext context, int index) {
-                      final TicketItem ticket = filtered[index];
+                      final TicketItem ticket = _tickets[index];
                       return Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.md,

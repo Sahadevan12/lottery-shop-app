@@ -271,7 +271,7 @@ abstract class AppLocalizations {
   /// No description provided for @verifyOfficialResultNote.
   ///
   /// In en, this message translates to:
-  /// **'Verify with official result'**
+  /// **'Verify with official Kerala State Lotteries result before paying out.'**
   String get verifyOfficialResultNote;
 
   /// No description provided for @loginTitle.
@@ -1767,6 +1767,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Updated {count} tickets'**
   String counterSaleUpdatedSuccess(String count);
+
+  /// No description provided for @enterResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter draw results'**
+  String get enterResultsTitle;
+
+  /// No description provided for @editResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit draw results'**
+  String get editResultsTitle;
+
+  /// No description provided for @resultsDrawTimeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Results can be entered after {time} IST on draw date.'**
+  String resultsDrawTimeNote(String time);
+
+  /// No description provided for @autoConsolationNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Consolation prizes are auto-matched from the 1st prize number across all other series.'**
+  String get autoConsolationNote;
+
+  /// No description provided for @addWinningNumberAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add number'**
+  String get addWinningNumberAction;
+
+  /// No description provided for @fullTicketHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. KR 482910'**
+  String get fullTicketHint;
+
+  /// No description provided for @last4DigitsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'4 digits (e.g. 2910)'**
+  String get last4DigitsHint;
+
+  /// No description provided for @last3DigitsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'3 digits (e.g. 910)'**
+  String get last3DigitsHint;
+
+  /// No description provided for @invalidFullTicketError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter series + 6 digits (e.g. KR 482910)'**
+  String get invalidFullTicketError;
+
+  /// No description provided for @invalidLast4Error.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter exactly 4 digits'**
+  String get invalidLast4Error;
+
+  /// No description provided for @invalidLast3Error.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter exactly 3 digits'**
+  String get invalidLast3Error;
+
+  /// No description provided for @duplicateEntryError.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate winning number in this tier'**
+  String get duplicateEntryError;
+
+  /// No description provided for @saveAndCheckResultsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save & check winners'**
+  String get saveAndCheckResultsAction;
+
+  /// No description provided for @resultsSavedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Results saved! Found {count} winning tickets'**
+  String resultsSavedSuccess(String count);
+
+  /// No description provided for @claimedWinAffectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Claimed wins will be affected'**
+  String get claimedWinAffectedTitle;
+
+  /// No description provided for @claimedWinAffectedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating these results will remove or change prizes for already claimed tickets: {tickets}. Proceed anyway?'**
+  String claimedWinAffectedBody(String tickets);
+
+  /// No description provided for @forceUpdateResultsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update anyway'**
+  String get forceUpdateResultsAction;
+
+  /// No description provided for @winnersFoundHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} winning tickets found!'**
+  String winnersFoundHeadline(String count);
+
+  /// No description provided for @noWinnersFoundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No winning tickets in your stock'**
+  String get noWinnersFoundTitle;
+
+  /// No description provided for @noWinnersFoundSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'None of your tickets for this draw matched the entered results.'**
+  String get noWinnersFoundSubtitle;
+
+  /// No description provided for @resultsNotEnteredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Results not entered yet'**
+  String get resultsNotEnteredTitle;
+
+  /// No description provided for @resultsNotEnteredSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the official draw results after 3 PM to match all winning tickets in your stock.'**
+  String get resultsNotEnteredSubtitle;
+
+  /// No description provided for @totalPrizeWonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total prize won'**
+  String get totalPrizeWonLabel;
+
+  /// No description provided for @soldByCounterBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Counter sale'**
+  String get soldByCounterBadge;
+
+  /// No description provided for @soldBySellerBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold by {name}'**
+  String soldBySellerBadge(String name);
+
+  /// No description provided for @soldByUnsoldBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsold'**
+  String get soldByUnsoldBadge;
+
+  /// No description provided for @claimStatusUnclaimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unclaimed'**
+  String get claimStatusUnclaimed;
+
+  /// No description provided for @claimStatusPaidToCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid to customer'**
+  String get claimStatusPaidToCustomer;
+
+  /// No description provided for @claimStatusClaimedFromOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'Claimed from office'**
+  String get claimStatusClaimedFromOffice;
+
+  /// No description provided for @claimStatusUnsoldWin.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsold win'**
+  String get claimStatusUnsoldWin;
+
+  /// No description provided for @claimStatusUpdatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim status updated'**
+  String get claimStatusUpdatedSuccess;
+
+  /// No description provided for @shareWinnerPosterAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Share winner poster'**
+  String get shareWinnerPosterAction;
+
+  /// No description provided for @winnerPosterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Winning Tickets'**
+  String get winnerPosterTitle;
+
+  /// No description provided for @winnerPosterVerifyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify with official result'**
+  String get winnerPosterVerifyNote;
+
+  /// No description provided for @winnerPosterFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated by LuckyLedger'**
+  String get winnerPosterFooter;
+
+  /// No description provided for @closeDrawAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Close draw'**
+  String get closeDrawAction;
+
+  /// No description provided for @closeDrawConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Close this draw?'**
+  String get closeDrawConfirmTitle;
+
+  /// No description provided for @closeDrawConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tickets still with sellers will become Sold by Seller. Results and stock for this draw will be locked.'**
+  String closeDrawConfirmBody(String count);
+
+  /// No description provided for @closeDrawConfirmZeroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Results and stock for this draw will be locked. You cannot edit them afterwards.'**
+  String get closeDrawConfirmZeroBody;
+
+  /// No description provided for @drawClosedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw closed and summary saved'**
+  String get drawClosedSuccess;
+
+  /// No description provided for @drawSummaryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw summary'**
+  String get drawSummaryLabel;
+
+  /// No description provided for @sellerWinsEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Winning tickets sold by this seller will appear here after draw results are entered.'**
+  String get sellerWinsEmptySubtitle;
+
+  /// No description provided for @errorDrawBeforeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Results cannot be saved before the draw time on draw date.'**
+  String get errorDrawBeforeTime;
+
+  /// No description provided for @errorDrawClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'This draw is already closed.'**
+  String get errorDrawClosed;
+
+  /// No description provided for @errorInvalidResultEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check the winning number format.'**
+  String get errorInvalidResultEntry;
+
+  /// No description provided for @errorDuplicateResultEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate winning number in the same prize tier.'**
+  String get errorDuplicateResultEntry;
+
+  /// No description provided for @errorClaimedWinAffected.
+  ///
+  /// In en, this message translates to:
+  /// **'A claimed winning ticket would be affected by this change.'**
+  String get errorClaimedWinAffected;
+
+  /// No description provided for @errorInvalidClaimStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid claim status for this ticket.'**
+  String get errorInvalidClaimStatus;
 }
 
 class _AppLocalizationsDelegate

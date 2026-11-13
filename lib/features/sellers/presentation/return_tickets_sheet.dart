@@ -11,7 +11,6 @@ import '../../../core/utils/formatters.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../stock/domain/stock_entities.dart';
 import '../../stock/presentation/stock_controller.dart';
-import '../domain/ledger_math.dart';
 import '../domain/seller_entities.dart';
 import 'sellers_controller.dart';
 
@@ -55,6 +54,11 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
   bool _isLoadingTickets = true;
   List<TicketItem> _sellerTickets = const <TicketItem>[];
   final Set<String> _tappedIds = <String>{};
+  TicketRangePreview _rangePreview = const TicketRangePreview(
+    totalCount: 0,
+    rangesSummary: '',
+  );
+  int _previewGeneration = 0;
   String? _statusMessage;
 
   @override
@@ -74,10 +78,13 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
   Future<void> _refreshSellerTickets() async {
     setState(() => _isLoadingTickets = true);
     try {
-      final List<TicketItem> tickets = await ref
+      final List<TicketItem> allTickets = await ref
           .read(sellerRepositoryProvider)
-          .fetchSellerTickets(widget.seller.id);
-      final List<TicketItem> withSeller = tickets
+          .fetchSellerTickets(
+            widget.seller.id,
+            limit: 200,
+          );
+      final List<TicketItem> withSeller = allTickets
           .where((TicketItem t) => t.status == TicketStatus.withSeller)
           .toList();
       if (mounted) {
@@ -102,6 +109,45 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
     }
   }
 
+  Future<void> _refreshRangePreview() async {
+    final String? drawId = _selectedDrawId;
+    final String series = _seriesController.text.trim().toUpperCase();
+    final String start = _startController.text.trim();
+    final String end = _endController.text.trim();
+    if (drawId == null ||
+        series.isEmpty ||
+        start.length != 6 ||
+        end.length != 6) {
+      if (mounted) {
+        setState(() {
+          _rangePreview = const TicketRangePreview(
+            totalCount: 0,
+            rangesSummary: '',
+          );
+        });
+      }
+      return;
+    }
+    final int gen = ++_previewGeneration;
+    try {
+      final TicketRangePreview preview =
+          await ref.read(stockRepositoryProvider).previewTickets(
+                drawId: drawId,
+                mode: 'RANGE',
+                series: series,
+                startNumber: start,
+                endNumber: end,
+                status: TicketStatus.withSeller,
+                sellerId: widget.seller.id,
+              );
+      if (mounted && gen == _previewGeneration) {
+        setState(() => _rangePreview = preview);
+      }
+    } catch (_) {
+      // Keep previous preview on transient error.
+    }
+  }
+
   List<TicketItem> _ticketsForSelectedDraw() {
     if (_selectedDrawId == null) {
       return const <TicketItem>[];
@@ -111,42 +157,52 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
         .toList();
   }
 
-  List<TicketItem>? _previewSelection() {
-    final List<TicketItem> drawTickets = _ticketsForSelectedDraw();
-    if (_byRangeMode) {
-      return LedgerMath.selectTicketsInRange(
-        tickets: drawTickets,
-        series: _seriesController.text,
-        startNumber: _startController.text,
-        endNumber: _endController.text,
-        requiredStatus: TicketStatus.withSeller,
-        requiredSellerId: widget.seller.id,
-      );
-    }
-    return drawTickets
-        .where((TicketItem t) => _tappedIds.contains(t.id))
-        .toList();
-  }
-
   Future<void> _submit(LotteryDraw? draw) async {
     final AppLocalizations l10n = AppLocalizations.of(context);
     if (draw == null) {
       setState(() => _statusMessage = l10n.errorNotFound);
       return;
     }
-    final List<TicketItem>? selected = _previewSelection();
-    if (selected == null || selected.isEmpty) {
-      setState(() => _statusMessage = l10n.errorInvalidRange);
-      return;
-    }
 
-    final bool ok = await ref
-        .read(sellersControllerProvider.notifier)
-        .returnTickets(
-          sellerId: widget.seller.id,
-          drawId: draw.id,
-          ticketIds: selected.map((TicketItem t) => t.id).toList(),
-        );
+    final SellersController controller =
+        ref.read(sellersControllerProvider.notifier);
+    bool ok = false;
+    int expectedCount = 0;
+
+    if (_byRangeMode) {
+      final String series = _seriesController.text.trim().toUpperCase();
+      final String start = _startController.text.trim();
+      final String end = _endController.text.trim();
+      expectedCount = _rangePreview.totalCount;
+      if (series.isEmpty ||
+          start.length != 6 ||
+          end.length != 6 ||
+          expectedCount == 0) {
+        setState(() => _statusMessage = l10n.errorInvalidRange);
+        return;
+      }
+      ok = await controller.returnTicketsByRange(
+        sellerId: widget.seller.id,
+        drawId: draw.id,
+        series: series,
+        startNumber: start,
+        endNumber: end,
+      );
+    } else {
+      final List<TicketItem> selected = _ticketsForSelectedDraw()
+          .where((TicketItem t) => _tappedIds.contains(t.id))
+          .toList();
+      if (selected.isEmpty) {
+        setState(() => _statusMessage = l10n.errorInvalidRange);
+        return;
+      }
+      expectedCount = selected.length;
+      ok = await controller.returnTickets(
+        sellerId: widget.seller.id,
+        drawId: draw.id,
+        ticketIds: selected.map((TicketItem t) => t.id).toList(),
+      );
+    }
 
     if (!mounted) {
       return;
@@ -162,6 +218,7 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
       });
       if (RpcErrorMapper.isTicketAvailabilityConflict(rawErr ?? '')) {
         await _refreshSellerTickets();
+        await _refreshRangePreview();
       }
       return;
     }
@@ -169,7 +226,7 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
     AppSnackbar.show(
       context,
       message: l10n.ticketsReturnedSuccess(
-        AppFormatters.count(selected.length),
+        AppFormatters.count(expectedCount),
       ),
     );
     Navigator.of(context).pop();
@@ -196,8 +253,9 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
         returnableDraws.isNotEmpty ? returnableDraws.first : null;
 
     final List<TicketItem> drawTickets = _ticketsForSelectedDraw();
-    final List<TicketItem>? selected = _previewSelection();
-    final int count = selected?.length ?? 0;
+    final int count = _byRangeMode
+        ? _rangePreview.totalCount
+        : drawTickets.where((TicketItem t) => _tappedIds.contains(t.id)).length;
     final int creditPaise = count * (selectedDraw?.ticketPricePaise ?? 0);
 
     return Column(
@@ -215,11 +273,14 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
                     label:
                         '${d.lotteryName} (${AppFormatters.shortDate(d.drawDate)})',
                     selected: selectedDraw?.id == d.id,
-                    onTap: () => setState(() {
-                      _selectedDrawId = d.id;
-                      _tappedIds.clear();
-                      _statusMessage = null;
-                    }),
+                    onTap: () {
+                      setState(() {
+                        _selectedDrawId = d.id;
+                        _tappedIds.clear();
+                        _statusMessage = null;
+                      });
+                      _refreshRangePreview();
+                    },
                   ),
                   const SizedBox(width: AppSpacing.sm),
                 ],
@@ -245,10 +306,13 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
               child: AppChip(
                 label: l10n.returnModeByRange,
                 selected: _byRangeMode,
-                onTap: () => setState(() {
-                  _byRangeMode = true;
-                  _statusMessage = null;
-                }),
+                onTap: () {
+                  setState(() {
+                    _byRangeMode = true;
+                    _statusMessage = null;
+                  });
+                  _refreshRangePreview();
+                },
               ),
             ),
           ],
@@ -262,7 +326,10 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
             useMonoFont: true,
             maxLength: 3,
             textCapitalization: TextCapitalization.characters,
-            onChanged: (_) => setState(() => _statusMessage = null),
+            onChanged: (_) {
+              setState(() => _statusMessage = null);
+              _refreshRangePreview();
+            },
           ),
           const SizedBox(height: AppSpacing.sm),
           Row(
@@ -278,7 +345,10 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
                   ],
-                  onChanged: (_) => setState(() => _statusMessage = null),
+                  onChanged: (_) {
+                    setState(() => _statusMessage = null);
+                    _refreshRangePreview();
+                  },
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -293,11 +363,21 @@ class _ReturnTicketsSheetState extends ConsumerState<ReturnTicketsSheet> {
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
                   ],
-                  onChanged: (_) => setState(() => _statusMessage = null),
+                  onChanged: (_) {
+                    setState(() => _statusMessage = null);
+                    _refreshRangePreview();
+                  },
                 ),
               ),
             ],
           ),
+          if ((_rangePreview.rangesSummary ?? '').isNotEmpty) ...<Widget>[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '${l10n.nextTicketsPreviewLabel} ${_rangePreview.rangesSummary}',
+              style: context.text.ticketMono.copyWith(color: colors.primary),
+            ),
+          ],
         ] else if (_isLoadingTickets)
           SkeletonLoader.list(itemCount: 2, itemHeight: 48)
         else if (drawTickets.isEmpty)

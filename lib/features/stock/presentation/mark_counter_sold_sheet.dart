@@ -9,15 +9,14 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ui_kit.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../sellers/domain/ledger_math.dart';
 import '../domain/stock_entities.dart';
 import '../domain/stock_range_logic.dart';
 import 'stock_controller.dart';
 
 /// Range-based Counter Sale Sheet (A.4 & Addition #2).
-/// - Marks `IN_STOCK` -> `SOLD_COUNTER` or unmarks `SOLD_COUNTER` -> `IN_STOCK` by range.
-/// - On `TICKETS_NOT_AVAILABLE`, shows friendly message, auto-refreshes the ticket list,
-///   and rebuilds the preview while keeping the sheet open.
+/// - Uses server-side `preview_tickets` RPC (no 1000-row cap).
+/// - On `TICKETS_NOT_AVAILABLE`, shows friendly message, re-runs `preview_tickets`,
+///   and keeps the sheet open.
 class MarkCounterSoldSheet extends ConsumerStatefulWidget {
   const MarkCounterSoldSheet({
     super.key,
@@ -66,8 +65,8 @@ class _MarkCounterSoldSheetState extends ConsumerState<MarkCounterSoldSheet> {
   late final TextEditingController _endController;
 
   bool _markSold = true;
-  bool _isLoadingTickets = true;
-  List<TicketItem> _drawTickets = const <TicketItem>[];
+  bool _isPreviewing = false;
+  TicketRangePreview _preview = const TicketRangePreview();
   String? _statusMessage;
 
   @override
@@ -82,7 +81,7 @@ class _MarkCounterSoldSheetState extends ConsumerState<MarkCounterSoldSheet> {
     _endController = TextEditingController(
       text: widget.initialEndNumber ?? '',
     );
-    _refreshTickets();
+    _refreshPreview();
   }
 
   @override
@@ -93,35 +92,46 @@ class _MarkCounterSoldSheetState extends ConsumerState<MarkCounterSoldSheet> {
     super.dispose();
   }
 
-  Future<void> _refreshTickets() async {
-    setState(() => _isLoadingTickets = true);
-    try {
-      final List<TicketItem> tickets = await ref
-          .read(stockRepositoryProvider)
-          .fetchTicketsForDraw(widget.draw.id);
+  Future<void> _refreshPreview() async {
+    final StockRangeEvaluation eval = StockRangeLogic.evaluateRange(
+      series: _seriesController.text,
+      startNumber: _startController.text,
+      endNumber: _endController.text,
+    );
+    if (!eval.isValid) {
       if (mounted) {
         setState(() {
-          _drawTickets = tickets;
-          _isLoadingTickets = false;
+          _preview = const TicketRangePreview();
+          _isPreviewing = false;
+        });
+      }
+      return;
+    }
+
+    setState(() => _isPreviewing = true);
+    try {
+      final TicketRangePreview res =
+          await ref.read(stockRepositoryProvider).previewTickets(
+                drawId: widget.draw.id,
+                mode: 'RANGE',
+                series: eval.normalizedSeries,
+                startNumber: eval.paddedStart,
+                endNumber: eval.paddedEnd,
+                status: _markSold
+                    ? TicketStatus.inStock
+                    : TicketStatus.soldCounter,
+              );
+      if (mounted) {
+        setState(() {
+          _preview = res;
+          _isPreviewing = false;
         });
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _isLoadingTickets = false);
+        setState(() => _isPreviewing = false);
       }
     }
-  }
-
-  List<TicketItem>? _previewMatchingTickets() {
-    return LedgerMath.selectTicketsInRange(
-      tickets: _drawTickets,
-      series: _seriesController.text,
-      startNumber: _startController.text,
-      endNumber: _endController.text,
-      requiredStatus: _markSold
-          ? TicketStatus.inStock
-          : TicketStatus.soldCounter,
-    );
   }
 
   Future<void> _submit() async {
@@ -159,7 +169,7 @@ class _MarkCounterSoldSheetState extends ConsumerState<MarkCounterSoldSheet> {
       setState(() => _statusMessage = friendly);
 
       if (RpcErrorMapper.isTicketAvailabilityConflict(rawErr ?? '')) {
-        await _refreshTickets();
+        await _refreshPreview();
       }
       return;
     }
@@ -178,8 +188,7 @@ class _MarkCounterSoldSheetState extends ConsumerState<MarkCounterSoldSheet> {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final AppColors colors = context.colors;
     final StockState stockState = ref.watch(stockControllerProvider);
-    final List<TicketItem>? matching = _previewMatchingTickets();
-    final int matchCount = matching?.length ?? 0;
+    final int matchCount = _preview.totalCount;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -191,10 +200,13 @@ class _MarkCounterSoldSheetState extends ConsumerState<MarkCounterSoldSheet> {
               child: AppChip(
                 label: l10n.counterSaleModeMark,
                 selected: _markSold,
-                onTap: () => setState(() {
-                  _markSold = true;
-                  _statusMessage = null;
-                }),
+                onTap: () {
+                  setState(() {
+                    _markSold = true;
+                    _statusMessage = null;
+                  });
+                  _refreshPreview();
+                },
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -202,10 +214,13 @@ class _MarkCounterSoldSheetState extends ConsumerState<MarkCounterSoldSheet> {
               child: AppChip(
                 label: l10n.counterSaleModeUnmark,
                 selected: !_markSold,
-                onTap: () => setState(() {
-                  _markSold = false;
-                  _statusMessage = null;
-                }),
+                onTap: () {
+                  setState(() {
+                    _markSold = false;
+                    _statusMessage = null;
+                  });
+                  _refreshPreview();
+                },
               ),
             ),
           ],
@@ -218,7 +233,10 @@ class _MarkCounterSoldSheetState extends ConsumerState<MarkCounterSoldSheet> {
           useMonoFont: true,
           maxLength: 3,
           textCapitalization: TextCapitalization.characters,
-          onChanged: (_) => setState(() => _statusMessage = null),
+          onChanged: (_) {
+            setState(() => _statusMessage = null);
+            _refreshPreview();
+          },
         ),
         const SizedBox(height: AppSpacing.md),
         Row(
@@ -234,7 +252,10 @@ class _MarkCounterSoldSheetState extends ConsumerState<MarkCounterSoldSheet> {
                 inputFormatters: <TextInputFormatter>[
                   FilteringTextInputFormatter.digitsOnly,
                 ],
-                onChanged: (_) => setState(() => _statusMessage = null),
+                onChanged: (_) {
+                  setState(() => _statusMessage = null);
+                  _refreshPreview();
+                },
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -249,7 +270,10 @@ class _MarkCounterSoldSheetState extends ConsumerState<MarkCounterSoldSheet> {
                 inputFormatters: <TextInputFormatter>[
                   FilteringTextInputFormatter.digitsOnly,
                 ],
-                onChanged: (_) => setState(() => _statusMessage = null),
+                onChanged: (_) {
+                  setState(() => _statusMessage = null);
+                  _refreshPreview();
+                },
               ),
             ),
           ],
@@ -269,7 +293,7 @@ class _MarkCounterSoldSheetState extends ConsumerState<MarkCounterSoldSheet> {
                 style: context.text.caption.copyWith(color: colors.inkMuted),
               ),
               Text(
-                _isLoadingTickets
+                _isPreviewing
                     ? '…'
                     : l10n.ticketsCountLabel(AppFormatters.count(matchCount)),
                 style: context.text.h2.copyWith(

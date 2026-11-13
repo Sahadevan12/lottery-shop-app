@@ -100,7 +100,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get verifyOfficialResultNote =>
-      'அதிகாரப்பூர்வ முடிவுடன் சரிபார்க்கவும்';
+      'பணம் வழங்கும் முன் அதிகாரப்பூர்வ கேரள லாட்டரி முடிவுடன் சரிபார்க்கவும்.';
 
   @override
   String get loginTitle => 'உங்கள் கடையில் உள்நுழையவும்';
@@ -708,7 +708,7 @@ class AppLocalizationsTa extends AppLocalizations {
       'கடனில் டிக்கெட் வழங்க \'டிக்கெட் கொடு\' என்பதைத் தட்டவும்.';
 
   @override
-  String get sellerWinsEmptyTitle => 'வெற்றி பெற்ற டிக்கெட்டுகள் இல்லை';
+  String get sellerWinsEmptyTitle => 'வெற்றி டிக்கெட்டுகள் இன்னும் இல்லை';
 
   @override
   String get sellerWinsEmptyBody =>
@@ -912,4 +912,172 @@ class AppLocalizationsTa extends AppLocalizations {
   String counterSaleUpdatedSuccess(String count) {
     return '$count டிக்கெட்டுகள் புதுப்பிக்கப்பட்டன';
   }
+
+  @override
+  String get enterResultsTitle => 'முடிவுகளை உள்ளிடவும்';
+
+  @override
+  String get editResultsTitle => 'முடிவுகளைத் திருத்தவும்';
+
+  @override
+  String resultsDrawTimeNote(String time) {
+    return 'குலுக்கல் நாளில் $time IST-க்குப் பிறகே முடிவுகளைச் சேமிக்க முடியும்.';
+  }
+
+  @override
+  String get autoConsolationNote =>
+      'முதல் பரிசு எண்ணிலிருந்து மற்ற தொடர்களுக்கான ஆறுதல் பரிசுகள் தானாகப் பொருத்தப்படும்.';
+
+  @override
+  String get addWinningNumberAction => 'எண் சேர்';
+
+  @override
+  String get fullTicketHint => 'எ.கா. KR 482910';
+
+  @override
+  String get last4DigitsHint => '4 இலக்கங்கள் (எ.கா. 2910)';
+
+  @override
+  String get last3DigitsHint => '3 இலக்கங்கள் (எ.கா. 910)';
+
+  @override
+  String get invalidFullTicketError =>
+      'தொடர் + 6 இலக்கங்களை உள்ளிடவும் (எ.கா. KR 482910)';
+
+  @override
+  String get invalidLast4Error => 'சரியாக 4 இலக்கங்களை உள்ளிடவும்';
+
+  @override
+  String get invalidLast3Error => 'சரியாக 3 இலக்கங்களை உள்ளிடவும்';
+
+  @override
+  String get duplicateEntryError => 'இந்தப் பிரிவில் எண் மீண்டும் வருகிறது';
+
+  @override
+  String get saveAndCheckResultsAction => 'சேமித்து வெற்றியாளர்களைச் சரிபார்';
+
+  @override
+  String resultsSavedSuccess(String count) {
+    return 'முடிவுகள் சேமிக்கப்பட்டன! $count வெற்றி டிக்கெட்டுகள் கண்டறியப்பட்டன';
+  }
+
+  @override
+  String get claimedWinAffectedTitle => 'கோரப்பட்ட பரிசுகள் பாதிக்கப்படும்';
+
+  @override
+  String claimedWinAffectedBody(String tickets) {
+    return 'இந்த மாற்றம் ஏற்கனவே கோரப்பட்ட டிக்கெட்டுகளைப் பாதிக்கும்: $tickets. தொடரலாமா?';
+  }
+
+  @override
+  String get forceUpdateResultsAction => 'எப்படியும் புதுப்பி';
+
+  @override
+  String winnersFoundHeadline(String count) {
+    return '$count வெற்றி டிக்கெட்டுகள்!';
+  }
+
+  @override
+  String get noWinnersFoundTitle =>
+      'உங்கள் இருப்பில் வெற்றி டிக்கெட்டுகள் இல்லை';
+
+  @override
+  String get noWinnersFoundSubtitle =>
+      'இந்தக் குலுக்கலில் உங்கள் டிக்கெட்டுகள் எதுவும் பொருந்தவில்லை.';
+
+  @override
+  String get resultsNotEnteredTitle => 'முடிவுகள் இன்னும் உள்ளிடப்படவில்லை';
+
+  @override
+  String get resultsNotEnteredSubtitle =>
+      'வெற்றி டிக்கெட்டுகளைக் கண்டறிய அதிகாரப்பூர்வ முடிவுகளை உள்ளிடவும்.';
+
+  @override
+  String get totalPrizeWonLabel => 'மொத்தப் பரிசுத் தொகை';
+
+  @override
+  String get soldByCounterBadge => 'கவுண்டர் விற்பனை';
+
+  @override
+  String soldBySellerBadge(String name) {
+    return 'விற்பனையாளர்: $name';
+  }
+
+  @override
+  String get soldByUnsoldBadge => 'விற்கப்படாதது';
+
+  @override
+  String get claimStatusUnclaimed => 'கோரப்படாதது';
+
+  @override
+  String get claimStatusPaidToCustomer => 'வாடிக்கையாளருக்கு வழங்கப்பட்டது';
+
+  @override
+  String get claimStatusClaimedFromOffice => 'அலுவலகத்திலிருந்து பெறப்பட்டது';
+
+  @override
+  String get claimStatusUnsoldWin => 'விற்கப்படாத வெற்றி';
+
+  @override
+  String get claimStatusUpdatedSuccess => 'பரிசு நிலை புதுப்பிக்கப்பட்டது';
+
+  @override
+  String get shareWinnerPosterAction => 'வெற்றியாளர் போஸ்டர் பகிர்';
+
+  @override
+  String get winnerPosterTitle => 'வெற்றி டிக்கெட்டுகள்';
+
+  @override
+  String get winnerPosterVerifyNote => 'அதிகாரப்பூர்வ முடிவுடன் சரிபார்க்கவும்';
+
+  @override
+  String get winnerPosterFooter => 'LuckyLedger மூலம் உருவாக்கப்பட்டது';
+
+  @override
+  String get closeDrawAction => 'குலுக்கலை மூடு';
+
+  @override
+  String get closeDrawConfirmTitle => 'இந்தக் குலுக்கலை மூடவா?';
+
+  @override
+  String closeDrawConfirmBody(String count) {
+    return 'விற்பனையாளர்களிடம் உள்ள $count டிக்கெட்டுகள் விற்பனையாளர் விற்றதாகக் குறிக்கப்படும். முடிவுகள் மற்றும் இருப்பு பூட்டப்படும்.';
+  }
+
+  @override
+  String get closeDrawConfirmZeroBody =>
+      'இந்தக் குலுக்கலின் முடிவுகள் மற்றும் இருப்பு பூட்டப்படும். பின்னர் மாற்ற முடியாது.';
+
+  @override
+  String get drawClosedSuccess =>
+      'குலுக்கல் மூடப்பட்டு சுருக்கம் சேமிக்கப்பட்டது';
+
+  @override
+  String get drawSummaryLabel => 'குலுக்கல் சுருக்கம்';
+
+  @override
+  String get sellerWinsEmptySubtitle =>
+      'முடிவுகள் உள்ளிடப்பட்ட பிறகு இந்த விற்பனையாளர் விற்ற வெற்றி டிக்கெட்டுகள் இங்கே தோன்றும்.';
+
+  @override
+  String get errorDrawBeforeTime =>
+      'குலுக்கல் நேரத்திற்கு முன் முடிவுகளைச் சேமிக்க முடியாது.';
+
+  @override
+  String get errorDrawClosed => 'இந்தக் குலுக்கல் ஏற்கனவே மூடப்பட்டுவிட்டது.';
+
+  @override
+  String get errorInvalidResultEntry =>
+      'வெற்றி எண்ணின் வடிவத்தைச் சரிபார்க்கவும்.';
+
+  @override
+  String get errorDuplicateResultEntry =>
+      'ஒரே பரிசுப் பிரிவில் எண் மீண்டும் வருகிறது.';
+
+  @override
+  String get errorClaimedWinAffected =>
+      'ஏற்கனவே கோரப்பட்ட வெற்றி டிக்கெட் பாதிக்கப்படும்.';
+
+  @override
+  String get errorInvalidClaimStatus => 'இந்த டிக்கெட்டுக்கு தவறான பரிசு நிலை.';
 }
