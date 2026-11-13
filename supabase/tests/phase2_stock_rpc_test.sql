@@ -20,21 +20,32 @@ on conflict (id) do nothing;
 -- Setup as User A ('11111111-1111-1111-1111-111111111111')
 -- ============================================================================
 set local role authenticated;
-set local "request.jwt.claim.sub" = '11111111-1111-1111-1111-111111111111';
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
+select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true);
 
 select create_shop_with_defaults('Shop A', 'Owner A', 'Ernakulam', 'AG-A', 'ml', '9876543210');
 
--- Create a draw for User A using create_draw RPC
+-- Execute create_draw in its own statement so the new draw and its 9 copied tiers are visible in the snapshot
+do $$
+declare
+  v_draw_id uuid;
+begin
+  v_draw_id := create_draw(
+    (select id from lotteries where code = 'W' limit 1),
+    current_date,
+    'W-900',
+    40.00,
+    (select id from prize_templates limit 1)
+  );
+  perform set_config('test.user_a_draw_id', v_draw_id::text, true);
+end;
+$$;
+
+-- 1. Verify create_draw created the draw and copied 9 template tiers into draw_prize_tiers
 select is(
   (
     select count(*)::int from draw_prize_tiers
-    where draw_id = create_draw(
-      (select id from lotteries where code = 'W' limit 1),
-      current_date,
-      'W-900',
-      40.00,
-      (select id from prize_templates limit 1)
-    )
+    where draw_id = current_setting('test.user_a_draw_id')::uuid
   ),
   9,
   '1. create_draw creates draw and copies 9 template tiers into draw_prize_tiers'
@@ -49,23 +60,32 @@ select throws_ok(
       40.00,
       null
     )$$,
+  'P0001',
   'DRAW_EXISTS',
   '2. create_draw raises DRAW_EXISTS on duplicate (shop_id, lottery_id, draw_date)'
 );
 
--- 3. Add stock batch KR 482900..482999 (100 tickets)
+-- 3. Add stock batch KR 482900..482999 (100 tickets) in its own statement, then assert ticket count
+do $$
+declare
+  v_batch_id uuid;
+begin
+  v_batch_id := create_stock_batch(
+    current_setting('test.user_a_draw_id')::uuid,
+    'KR',
+    '482900',
+    '482999',
+    35.00
+  );
+  perform set_config('test.user_a_batch_id', v_batch_id::text, true);
+end;
+$$;
+
 select is(
   (
-    with new_batch as (
-      select create_stock_batch(
-        (select id from draws where draw_number = 'W-900' limit 1),
-        'KR',
-        '482900',
-        '482999',
-        35.00
-      ) as id
-    )
-    select count(*)::int from tickets where batch_id = (select id from new_batch)
+    select count(*)::int from tickets
+    where batch_id = current_setting('test.user_a_batch_id')::uuid
+      and status = 'IN_STOCK'
   ),
   100,
   '3. create_stock_batch creates batch and expands 100 tickets in IN_STOCK status'
@@ -74,25 +94,20 @@ select is(
 -- 4. Overlapping range raises STOCK_OVERLAP with overlapping range detail
 select throws_ok(
   $$select create_stock_batch(
-      (select id from draws where draw_number = 'W-900' limit 1),
+      current_setting('test.user_a_draw_id')::uuid,
       'KR',
       '482950',
       '483049',
       35.00
     )$$,
+  'P0001',
   'STOCK_OVERLAP',
   '4. create_stock_batch raises STOCK_OVERLAP when ticket numbers overlap'
 );
 
--- Save User A's draw_id in a custom transaction setting so User B can attempt to target it directly
-select set_config(
-  'test.user_a_draw_id',
-  (select id::text from draws where draw_number = 'W-900' limit 1),
-  true
-);
-
 -- 5. User B cannot create stock in User A's draw (raises NOT_FOUND)
-set local "request.jwt.claim.sub" = '22222222-2222-2222-2222-222222222222';
+select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
+select set_config('request.jwt.claims', '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}', true);
 select create_shop_with_defaults('Shop B', 'Owner B', 'Kollam', 'AG-B', 'ml', '9876543211');
 
 select throws_ok(
@@ -103,23 +118,26 @@ select throws_ok(
       '100099',
       35.00
     )$$,
+  'P0001',
   'NOT_FOUND',
   '5. User B cannot create stock in User A draw (NOT_FOUND)'
 );
 
 -- Switch back to User A
-set local "request.jwt.claim.sub" = '11111111-1111-1111-1111-111111111111';
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
+select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true);
 
 -- 6. Mark one ticket as WITH_SELLER and verify delete_stock_batch raises BATCH_IN_USE
 update tickets
 set status = 'WITH_SELLER'
-where draw_id = (select id from draws where draw_number = 'W-900' limit 1)
+where draw_id = current_setting('test.user_a_draw_id')::uuid
   and number = '482900';
 
 select throws_ok(
   $$select delete_stock_batch(
-      (select id from stock_batches where series = 'KR' and start_number = '482900' limit 1)
+      current_setting('test.user_a_batch_id')::uuid
     )$$,
+  'P0001',
   'BATCH_IN_USE',
   '6. delete_stock_batch raises BATCH_IN_USE when any ticket is not IN_STOCK'
 );
@@ -127,12 +145,12 @@ select throws_ok(
 -- 7. Restore ticket to IN_STOCK and verify delete_stock_batch deletes the batch and its tickets
 update tickets
 set status = 'IN_STOCK'
-where draw_id = (select id from draws where draw_number = 'W-900' limit 1)
+where draw_id = current_setting('test.user_a_draw_id')::uuid
   and number = '482900';
 
 select lives_ok(
   $$select delete_stock_batch(
-      (select id from stock_batches where series = 'KR' and start_number = '482900' limit 1)
+      current_setting('test.user_a_batch_id')::uuid
     )$$,
   '7. delete_stock_batch succeeds when all tickets are IN_STOCK'
 );
@@ -140,16 +158,17 @@ select lives_ok(
 -- 8. Set draw status to RESULT_ENTERED and verify create_stock_batch raises DRAW_NOT_OPEN
 update draws
 set status = 'RESULT_ENTERED'
-where draw_number = 'W-900';
+where id = current_setting('test.user_a_draw_id')::uuid;
 
 select throws_ok(
   $$select create_stock_batch(
-      (select id from draws where draw_number = 'W-900' limit 1),
+      current_setting('test.user_a_draw_id')::uuid,
       'KR',
       '500000',
       '500099',
       35.00
     )$$,
+  'P0001',
   'DRAW_NOT_OPEN',
   '8. create_stock_batch raises DRAW_NOT_OPEN when draw status is not UPCOMING'
 );

@@ -16,7 +16,7 @@
 
 begin;
 create extension if not exists pgtap;
-select plan(20);
+select plan(21);
 
 -- Create two test users in auth.users
 insert into auth.users (id, email)
