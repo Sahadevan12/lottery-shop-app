@@ -8,7 +8,7 @@ on:
 
 jobs:
   backup:
-    name: Dump, Compress, Encrypt & Upload Backup
+    name: Dump Auth + Public, Compress, Encrypt & Upload Backup
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -27,37 +27,57 @@ jobs:
             exit 1
           fi
 
-      - name: Install PostgreSQL 15 client & GnuPG
+      - name: Install PostgreSQL client & GnuPG
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client gnupg gzip
+          sudo apt-get install -y postgresql-client gnupg gzip tar
 
-      - name: Create encrypted backup archive
+      - name: Dump auth (users + identities) and public schema, then encrypt
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: |
           set -euo pipefail
           TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
-          RAW_FILE="luckyledger_${TIMESTAMP}.sql.gz"
-          ENC_FILE="${RAW_FILE}.gpg"
+          BACKUP_DIR="luckyledger_backup_${TIMESTAMP}"
+          TAR_FILE="${BACKUP_DIR}.tar.gz"
+          ENC_FILE="${TAR_FILE}.gpg"
 
+          mkdir -p "$BACKUP_DIR"
+
+          # 1. Dump auth.users and auth.identities data first so user logins
+          #    and shops.owner_id foreign keys remain valid on restore.
+          pg_dump "$SUPABASE_DB_URL" \
+            --data-only \
+            --table=auth.users \
+            --table=auth.identities \
+            --no-owner \
+            --no-privileges \
+            --column-inserts \
+            --on-conflict-do-nothing \
+            > "${BACKUP_DIR}/01_auth_data.sql"
+
+          # 2. Dump public schema and data (shops, sellers, draws, batches,
+          #    tickets, ledger_entries, wins, draw_summaries, views, RPCs).
           pg_dump "$SUPABASE_DB_URL" \
             --schema=public \
             --no-owner \
             --no-privileges \
             --clean \
             --if-exists \
-            | gzip -9 > "$RAW_FILE"
+            > "${BACKUP_DIR}/02_public.sql"
+
+          tar -czf "$TAR_FILE" "$BACKUP_DIR"
+          rm -rf "$BACKUP_DIR"
 
           gpg --batch --yes \
             --passphrase-fd 3 \
             --symmetric \
             --cipher-algo AES256 \
             --output "$ENC_FILE" \
-            "$RAW_FILE" 3<<< "$BACKUP_PASSPHRASE"
+            "$TAR_FILE" 3<<< "$BACKUP_PASSPHRASE"
 
-          rm -f "$RAW_FILE"
+          rm -f "$TAR_FILE"
           echo "ENC_FILE=$ENC_FILE" >> "$GITHUB_ENV"
           ls -lh "$ENC_FILE"
 
