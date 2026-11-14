@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/connectivity_service.dart';
 import '../../../core/supabase/rpc_error_mapper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -160,6 +161,7 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
     final SellersState sellersState = ref.watch(sellersControllerProvider);
     final StockState stockState = ref.watch(stockControllerProvider);
     final ResultsState resultsState = ref.watch(resultsControllerProvider);
+    final bool isOnline = ref.watch(isOnlineProvider);
 
     final SellerSummary? summary = sellersState.summaryFor(widget.sellerId);
     if (summary == null) {
@@ -201,10 +203,12 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
           IconButton(
             tooltip: l10n.editSellerTitle,
             icon: const Icon(Icons.edit_outlined),
-            onPressed: () => AddEditSellerSheet.show(
-              context: context,
-              existingSeller: seller,
-            ),
+            onPressed: isOnline
+                ? () => AddEditSellerSheet.show(
+                      context: context,
+                      existingSeller: seller,
+                    )
+                : null,
           ),
           IconButton(
             tooltip: seller.isActive
@@ -215,13 +219,16 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
                   ? Icons.person_off_outlined
                   : Icons.person_add_alt_1_outlined,
             ),
-            onPressed: () => _toggleActive(seller, l10n),
+            onPressed: isOnline ? () => _toggleActive(seller, l10n) : null,
           ),
           if (summary.canDeleteDirectly)
             IconButton(
               tooltip: l10n.deleteAction,
-              icon: Icon(Icons.delete_outline_rounded, color: colors.danger),
-              onPressed: () => _deleteSeller(seller, l10n),
+              icon: Icon(
+                Icons.delete_outline_rounded,
+                color: isOnline ? colors.danger : colors.inkMuted,
+              ),
+              onPressed: isOnline ? () => _deleteSeller(seller, l10n) : null,
             ),
         ],
       ),
@@ -237,12 +244,23 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
+                if (!isOnline || sellersState.isFromCache) ...<Widget>[
+                  OfflineBanner(
+                    cachedAt: sellersState.cachedAt,
+                    onRetry: () => ref
+                        .read(sellersControllerProvider.notifier)
+                        .loadSellerDetail(widget.sellerId),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
                 // 1. Tappable Hero Balance Card (§8.4, A.6)
                 AppCard(
                   onTap: () async {
-                    final SellerBalanceBreakdown serverBreakdown = await ref
-                        .read(sellersControllerProvider.notifier)
-                        .fetchSellerBalanceBreakdown(seller.id);
+                    final SellerBalanceBreakdown serverBreakdown = isOnline
+                        ? await ref
+                            .read(sellersControllerProvider.notifier)
+                            .fetchSellerBalanceBreakdown(seller.id)
+                        : breakdown;
                     if (!context.mounted) {
                       return;
                     }
@@ -290,7 +308,7 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
                       child: AppButton(
                         label: l10n.giveTicketsShortAction,
                         variant: AppButtonVariant.secondary,
-                        onPressed: seller.isActive
+                        onPressed: (isOnline && seller.isActive)
                             ? () => GiveTicketsSheet.show(
                                   context: context,
                                   initialSeller: seller,
@@ -303,10 +321,12 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
                       child: AppButton(
                         label: l10n.takeReturnAction,
                         variant: AppButtonVariant.secondary,
-                        onPressed: () => ReturnTicketsSheet.show(
-                          context: context,
-                          seller: seller,
-                        ),
+                        onPressed: isOnline
+                            ? () => ReturnTicketsSheet.show(
+                                  context: context,
+                                  seller: seller,
+                                )
+                            : null,
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
@@ -314,14 +334,24 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
                       child: AppButton(
                         label: l10n.recordPaymentShortAction,
                         variant: AppButtonVariant.secondary,
-                        onPressed: () => RecordPaymentSheet.show(
-                          context: context,
-                          initialSeller: seller,
-                        ),
+                        onPressed: isOnline
+                            ? () => RecordPaymentSheet.show(
+                                  context: context,
+                                  initialSeller: seller,
+                                )
+                            : null,
                       ),
                     ),
                   ],
                 ),
+                if (!isOnline) ...<Widget>[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    l10n.offlineWriteDisabledMessage,
+                    textAlign: TextAlign.center,
+                    style: context.text.caption.copyWith(color: colors.inkMuted),
+                  ),
+                ],
               ],
             ),
           ),
@@ -344,9 +374,18 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
               children: <Widget>[
                 SellerLedgerTab(
                   entries: entries,
-                  onReverseEntry: (LedgerEntry e) =>
-                      _confirmReverseEntry(e, l10n),
-                  onGiveTickets: seller.isActive
+                  onReverseEntry: (LedgerEntry e) {
+                    if (!isOnline) {
+                      AppSnackbar.show(
+                        context,
+                        message: l10n.offlineWriteDisabledMessage,
+                        isError: true,
+                      );
+                      return;
+                    }
+                    _confirmReverseEntry(e, l10n);
+                  },
+                  onGiveTickets: (isOnline && seller.isActive)
                       ? () => GiveTicketsSheet.show(
                             context: context,
                             initialSeller: seller,
@@ -355,7 +394,7 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
                 ),
                 SellerTicketsTab(
                   tickets: tickets,
-                  onGiveTickets: seller.isActive
+                  onGiveTickets: (isOnline && seller.isActive)
                       ? () => GiveTicketsSheet.show(
                             context: context,
                             initialSeller: seller,
@@ -366,6 +405,14 @@ class _SellerDetailScreenState extends ConsumerState<SellerDetailScreen>
                   wins: resultsState.winsForSeller(seller.id),
                   onChangeClaimStatus:
                       (WinningTicket win, WinClaimStatus status) async {
+                    if (!isOnline) {
+                      AppSnackbar.show(
+                        context,
+                        message: l10n.offlineWriteDisabledMessage,
+                        isError: true,
+                      );
+                      return;
+                    }
                     final bool ok = await ref
                         .read(resultsControllerProvider.notifier)
                         .updateWinClaimStatus(

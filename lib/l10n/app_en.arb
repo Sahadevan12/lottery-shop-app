@@ -547,5 +547,13 @@
   "posterTemplateFestive": "Festive Banner",
   "posterLanguageLabel": "Poster language",
   "posterMaskNumbersLabel": "Mask ticket numbers (e.g. KR 48****)",
-  "posterShareNowAction": "Share 1080×1350 PNG"
+  "posterShareNowAction": "Share 1080×1350 PNG",
+  "offlineBannerWithTime": "Offline — showing data from {time}",
+  "@offlineBannerWithTime": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "offlineBannerNoTime": "Offline — showing cached data",
+  "offlineWriteDisabledMessage": "Internet connection required for this action."
 }

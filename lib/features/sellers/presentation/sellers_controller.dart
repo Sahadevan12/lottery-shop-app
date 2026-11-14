@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/cache/cache_codecs.dart';
+import '../../../core/cache/cached_fetch.dart';
 import '../../../core/supabase/supabase_config.dart';
 import '../../stock/domain/stock_entities.dart';
 import '../../stock/presentation/stock_controller.dart';
@@ -22,6 +24,8 @@ class SellersState {
     this.isSubmitting = false,
     this.errorMessage,
     this.lastCreatedEntryId,
+    this.cachedAt,
+    this.isFromCache = false,
   });
 
   final List<SellerSummary> sellers;
@@ -34,6 +38,8 @@ class SellersState {
   final bool isSubmitting;
   final String? errorMessage;
   final String? lastCreatedEntryId;
+  final DateTime? cachedAt;
+  final bool isFromCache;
 
   List<SellerSummary> get visibleSellers => LedgerMath.filterAndSortSellers(
         sellers: sellers,
@@ -92,6 +98,9 @@ class SellersState {
     String? errorMessage,
     bool clearError = false,
     String? lastCreatedEntryId,
+    DateTime? cachedAt,
+    bool clearCachedAt = false,
+    bool? isFromCache,
   }) {
     return SellersState(
       sellers: sellers ?? this.sellers,
@@ -104,6 +113,8 @@ class SellersState {
       isSubmitting: isSubmitting ?? this.isSubmitting,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       lastCreatedEntryId: lastCreatedEntryId ?? this.lastCreatedEntryId,
+      cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
+      isFromCache: isFromCache ?? this.isFromCache,
     );
   }
 }
@@ -134,8 +145,24 @@ class SellersController extends Notifier<SellersState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final SellerRepository repo = ref.read(sellerRepositoryProvider);
-      final List<SellerSummary> list = await repo.fetchSellersWithBalances();
-      state = state.copyWith(sellers: list, isLoading: false);
+      final CachedFetchResult<List<SellerSummary>> res =
+          await CachedFetch.run<List<SellerSummary>>(
+        ref: ref,
+        cacheKey: 'sellers_summaries',
+        remoteFetch: repo.fetchSellersWithBalances,
+        toJson: (List<SellerSummary> list) =>
+            list.map(CacheCodecs.sellerSummaryToJson).toList(),
+        fromJson: (Object raw) => (raw as List<dynamic>)
+            .map((dynamic e) => CacheCodecs.sellerSummaryFromJson(
+                Map<String, dynamic>.from(e as Map)))
+            .toList(growable: false),
+      );
+      state = state.copyWith(
+        sellers: res.data,
+        isLoading: false,
+        cachedAt: res.cachedAt,
+        isFromCache: res.isFromCache,
+      );
     } catch (err) {
       state = state.copyWith(
         isLoading: false,
@@ -159,21 +186,61 @@ class SellersController extends Notifier<SellersState> {
   Future<void> loadSellerDetail(String sellerId) async {
     try {
       final SellerRepository repo = ref.read(sellerRepositoryProvider);
-      final List<SellerSummary> summaries =
-          await repo.fetchSellersWithBalances();
-      final List<LedgerEntry> ledger = await repo.fetchSellerLedger(sellerId);
-      final List<TicketItem> tickets = await repo.fetchSellerTickets(sellerId);
+      final CachedFetchResult<_SellerDetailPayload> res =
+          await CachedFetch.run<_SellerDetailPayload>(
+        ref: ref,
+        cacheKey: 'seller_detail_$sellerId',
+        remoteFetch: () async {
+          final List<SellerSummary> summaries =
+              await repo.fetchSellersWithBalances();
+          final List<LedgerEntry> ledger =
+              await repo.fetchSellerLedger(sellerId);
+          final List<TicketItem> tickets =
+              await repo.fetchSellerTickets(sellerId);
+          return _SellerDetailPayload(
+            summaries: summaries,
+            ledger: ledger,
+            tickets: tickets,
+          );
+        },
+        toJson: (_SellerDetailPayload p) => <String, dynamic>{
+          'summaries': p.summaries.map(CacheCodecs.sellerSummaryToJson).toList(),
+          'ledger': p.ledger.map(CacheCodecs.ledgerEntryToJson).toList(),
+          'tickets': p.tickets.map(CacheCodecs.ticketToJson).toList(),
+        },
+        fromJson: (Object raw) {
+          final Map<String, dynamic> map =
+              Map<String, dynamic>.from(raw as Map);
+          return _SellerDetailPayload(
+            summaries: (map['summaries'] as List<dynamic>? ?? <dynamic>[])
+                .map((dynamic e) => CacheCodecs.sellerSummaryFromJson(
+                    Map<String, dynamic>.from(e as Map)))
+                .toList(growable: false),
+            ledger: (map['ledger'] as List<dynamic>? ?? <dynamic>[])
+                .map((dynamic e) =>
+                    LedgerEntry.fromJson(Map<String, dynamic>.from(e as Map)))
+                .toList(growable: false),
+            tickets: (map['tickets'] as List<dynamic>? ?? <dynamic>[])
+                .map((dynamic e) =>
+                    TicketItem.fromJson(Map<String, dynamic>.from(e as Map)))
+                .toList(growable: false),
+          );
+        },
+      );
 
+      final _SellerDetailPayload data = res.data;
       state = state.copyWith(
-        sellers: summaries,
+        sellers: data.summaries,
         ledgerBySeller: <String, List<LedgerEntry>>{
           ...state.ledgerBySeller,
-          sellerId: ledger,
+          sellerId: data.ledger,
         },
         ticketsBySeller: <String, List<TicketItem>>{
           ...state.ticketsBySeller,
-          sellerId: tickets,
+          sellerId: data.tickets,
         },
+        cachedAt: res.cachedAt,
+        isFromCache: res.isFromCache,
         clearError: true,
       );
     } catch (err) {
@@ -449,4 +516,16 @@ class SellersController extends Notifier<SellersState> {
       return false;
     }
   }
+}
+
+class _SellerDetailPayload {
+  const _SellerDetailPayload({
+    required this.summaries,
+    required this.ledger,
+    required this.tickets,
+  });
+
+  final List<SellerSummary> summaries;
+  final List<LedgerEntry> ledger;
+  final List<TicketItem> tickets;
 }

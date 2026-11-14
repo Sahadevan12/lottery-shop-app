@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/connectivity_service.dart';
 import '../../../core/supabase/rpc_error_mapper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -85,6 +86,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
     final StockState stockState = ref.watch(stockControllerProvider);
     final StockController controller =
         ref.read(stockControllerProvider.notifier);
+    final bool isOnline = ref.watch(isOnlineProvider);
 
     final DateTime today = DateTime.now();
     final DateTime tomorrow = today.add(const Duration(days: 1));
@@ -112,8 +114,8 @@ class _StockScreenState extends ConsumerState<StockScreen> {
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.screenHorizontal),
             child: SyncStatusPill(
-              status: SyncStatus.synced,
-              label: l10n.syncStatusSynced,
+              status: isOnline ? SyncStatus.synced : SyncStatus.offline,
+              label: isOnline ? l10n.syncStatusSynced : l10n.syncStatusOffline,
             ),
           ),
         ],
@@ -129,6 +131,13 @@ class _StockScreenState extends ConsumerState<StockScreen> {
             AppSpacing.xxl,
           ),
           children: <Widget>[
+            if (!isOnline || stockState.isFromCache) ...<Widget>[
+              OfflineBanner(
+                cachedAt: stockState.cachedAt,
+                onRetry: controller.loadInitialData,
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
             // 1. Draw Selector Chip Row (§8.3)
             SizedBox(
               height: AppSpacing.minTouchTarget,
@@ -167,10 +176,16 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                   AppChip(
                     label: l10n.newDrawChip,
                     selected: false,
-                    onTap: () => CreateDrawSheet.show(
-                      context: context,
-                      initialDate: todayDraw == null ? today : tomorrow,
-                    ),
+                    onTap: isOnline
+                        ? () => CreateDrawSheet.show(
+                              context: context,
+                              initialDate: todayDraw == null ? today : tomorrow,
+                            )
+                        : () => AppSnackbar.show(
+                              context,
+                              message: l10n.offlineWriteDisabledMessage,
+                              isError: true,
+                            ),
                   ),
                 ],
               ),
@@ -187,13 +202,15 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                   message: l10n.createTodayDrawBody(
                     todayDefaultLottery?.name ?? l10n.lotteryFieldLabel,
                   ),
-                  actionLabel: l10n.createTodayDrawTitle,
+                  actionLabel: isOnline ? l10n.createTodayDrawTitle : null,
                   icon: Icons.event_available_outlined,
-                  onAction: () => CreateDrawSheet.show(
-                    context: context,
-                    initialDate: today,
-                    initialLottery: todayDefaultLottery,
-                  ),
+                  onAction: isOnline
+                      ? () => CreateDrawSheet.show(
+                            context: context,
+                            initialDate: today,
+                            initialLottery: todayDefaultLottery,
+                          )
+                      : null,
                 ),
               )
             else ...<Widget>[
@@ -263,15 +280,17 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                   child: EmptyState(
                     title: l10n.stockEmptyTitle,
                     message: l10n.stockEmptyBody,
-                    actionLabel: selectedDraw.status == DrawStatus.upcoming
-                        ? l10n.stockEmptyCta
-                        : null,
-                    onAction: selectedDraw.status == DrawStatus.upcoming
-                        ? () => AddStockSheet.show(
-                              context: context,
-                              draw: selectedDraw,
-                            )
-                        : null,
+                    actionLabel:
+                        (isOnline && selectedDraw.status == DrawStatus.upcoming)
+                            ? l10n.stockEmptyCta
+                            : null,
+                    onAction:
+                        (isOnline && selectedDraw.status == DrawStatus.upcoming)
+                            ? () => AddStockSheet.show(
+                                  context: context,
+                                  draw: selectedDraw,
+                                )
+                            : null,
                   ),
                 )
               else
@@ -287,7 +306,13 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                           ),
                         );
                       },
-                      onDelete: () => _confirmDeleteBatch(context, batch, l10n),
+                      onDelete: isOnline
+                          ? () => _confirmDeleteBatch(context, batch, l10n)
+                          : () => AppSnackbar.show(
+                                context,
+                                message: l10n.offlineWriteDisabledMessage,
+                                isError: true,
+                              ),
                     ),
                   );
                 }),
@@ -324,21 +349,34 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                             label: l10n.counterSaleAction,
                             variant: AppButtonVariant.secondary,
                             leadingIcon: Icons.storefront_outlined,
-                            onPressed: () => MarkCounterSoldSheet.show(
-                              context: context,
-                              draw: selectedDraw,
-                            ),
+                            onPressed: isOnline
+                                ? () => MarkCounterSoldSheet.show(
+                                      context: context,
+                                      draw: selectedDraw,
+                                    )
+                                : null,
                           ),
                           const SizedBox(height: AppSpacing.sm),
                         ],
                         AppButton(
                           label: l10n.stockEmptyCta,
                           leadingIcon: Icons.add_rounded,
-                          onPressed: () => AddStockSheet.show(
-                            context: context,
-                            draw: selectedDraw,
-                          ),
+                          onPressed: isOnline
+                              ? () => AddStockSheet.show(
+                                    context: context,
+                                    draw: selectedDraw,
+                                  )
+                              : null,
                         ),
+                        if (!isOnline) ...<Widget>[
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            l10n.offlineWriteDisabledMessage,
+                            textAlign: TextAlign.center,
+                            style: context.text.caption
+                                .copyWith(color: colors.inkMuted),
+                          ),
+                        ],
                       ],
                     ),
                   ),

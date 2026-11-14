@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/cache/cached_fetch.dart';
 import '../../../core/supabase/supabase_config.dart';
 import '../data/home_repository.dart';
 
@@ -20,22 +21,30 @@ class HomeState {
     this.dashboard,
     this.isLoading = false,
     this.error,
+    this.cachedAt,
+    this.isFromCache = false,
   });
 
   final DashboardTodayData? dashboard;
   final bool isLoading;
   final Object? error;
+  final DateTime? cachedAt;
+  final bool isFromCache;
 
   HomeState copyWith({
     DashboardTodayData? dashboard,
     bool? isLoading,
     Object? error,
     bool clearError = false,
+    DateTime? cachedAt,
+    bool? isFromCache,
   }) {
     return HomeState(
       dashboard: dashboard ?? this.dashboard,
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
+      cachedAt: cachedAt ?? this.cachedAt,
+      isFromCache: isFromCache ?? this.isFromCache,
     );
   }
 }
@@ -44,6 +53,8 @@ final NotifierProvider<HomeController, HomeState> homeControllerProvider =
     NotifierProvider<HomeController, HomeState>(HomeController.new);
 
 class HomeController extends Notifier<HomeState> {
+  static const String _cacheKey = 'dashboard_today';
+
   @override
   HomeState build() {
     Future<void>.microtask(refresh);
@@ -54,11 +65,22 @@ class HomeController extends Notifier<HomeState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final HomeRepository repo = ref.read(homeRepositoryProvider);
-      final DashboardTodayData data = await repo.fetchDashboardToday();
+      final CachedFetchResult<DashboardTodayData> result =
+          await CachedFetch.run<DashboardTodayData>(
+        ref: ref,
+        cacheKey: _cacheKey,
+        remoteFetch: repo.fetchDashboardToday,
+        toJson: (DashboardTodayData d) => d.toJson(),
+        fromJson: (Object json) => DashboardTodayData.fromJson(
+          Map<String, dynamic>.from(json as Map),
+        ),
+      );
       state = state.copyWith(
-        dashboard: data,
+        dashboard: result.data,
         isLoading: false,
         clearError: true,
+        cachedAt: result.cachedAt,
+        isFromCache: result.isFromCache,
       );
     } catch (e) {
       state = state.copyWith(

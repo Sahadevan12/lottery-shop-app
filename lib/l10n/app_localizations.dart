@@ -2272,6 +2272,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share 1080×1350 PNG'**
   String get posterShareNowAction;
+
+  /// No description provided for @offlineBannerWithTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline — showing data from {time}'**
+  String offlineBannerWithTime(String time);
+
+  /// No description provided for @offlineBannerNoTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline — showing cached data'**
+  String get offlineBannerNoTime;
+
+  /// No description provided for @offlineWriteDisabledMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Internet connection required for this action.'**
+  String get offlineWriteDisabledMessage;
 }
 
 class _AppLocalizationsDelegate

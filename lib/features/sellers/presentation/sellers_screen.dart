@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/connectivity_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
@@ -39,6 +40,7 @@ class _SellersScreenState extends ConsumerState<SellersScreen> {
     final SellersState state = ref.watch(sellersControllerProvider);
     final SellersController controller =
         ref.read(sellersControllerProvider.notifier);
+    final bool isOnline = ref.watch(isOnlineProvider);
 
     final List<SellerSummary> visibleSellers = state.visibleSellers;
 
@@ -49,8 +51,8 @@ class _SellersScreenState extends ConsumerState<SellersScreen> {
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.screenHorizontal),
             child: SyncStatusPill(
-              status: SyncStatus.synced,
-              label: l10n.syncStatusSynced,
+              status: isOnline ? SyncStatus.synced : SyncStatus.offline,
+              label: isOnline ? l10n.syncStatusSynced : l10n.syncStatusOffline,
             ),
           ),
         ],
@@ -66,6 +68,13 @@ class _SellersScreenState extends ConsumerState<SellersScreen> {
             AppSpacing.xxl,
           ),
           children: <Widget>[
+            if (!isOnline || state.isFromCache) ...<Widget>[
+              OfflineBanner(
+                cachedAt: state.cachedAt,
+                onRetry: controller.loadSellers,
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
             // 1. Search Bar
             AppTextField(
               label: l10n.navSellers,
@@ -119,9 +128,11 @@ class _SellersScreenState extends ConsumerState<SellersScreen> {
                 child: EmptyState(
                   title: l10n.sellersEmptyTitle,
                   message: l10n.sellersEmptyBody,
-                  actionLabel: l10n.sellersEmptyCta,
+                  actionLabel: isOnline ? l10n.sellersEmptyCta : null,
                   icon: Icons.people_outline_rounded,
-                  onAction: () => AddEditSellerSheet.show(context: context),
+                  onAction: isOnline
+                      ? () => AddEditSellerSheet.show(context: context)
+                      : null,
                 ),
               )
             else
@@ -147,10 +158,25 @@ class _SellersScreenState extends ConsumerState<SellersScreen> {
             AppSpacing.screenHorizontal,
             AppSpacing.md,
           ),
-          child: AppButton(
-            label: l10n.addSellerAction,
-            leadingIcon: Icons.person_add_alt_1_rounded,
-            onPressed: () => AddEditSellerSheet.show(context: context),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              AppButton(
+                label: l10n.addSellerAction,
+                leadingIcon: Icons.person_add_alt_1_rounded,
+                onPressed: isOnline
+                    ? () => AddEditSellerSheet.show(context: context)
+                    : null,
+              ),
+              if (!isOnline) ...<Widget>[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  l10n.offlineWriteDisabledMessage,
+                  textAlign: TextAlign.center,
+                  style: context.text.caption.copyWith(color: colors.inkMuted),
+                ),
+              ],
+            ],
           ),
         ),
       ),

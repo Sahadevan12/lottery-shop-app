@@ -1204,4 +1204,15 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get posterShareNowAction => '1080×1350 PNG பகிர்';
+
+  @override
+  String offlineBannerWithTime(String time) {
+    return 'ஆஃப்லைன் — $time தரவு காட்டப்படுகிறது';
+  }
+
+  @override
+  String get offlineBannerNoTime => 'ஆஃப்லைன் — சேமித்த தரவு காட்டப்படுகிறது';
+
+  @override
+  String get offlineWriteDisabledMessage => 'இந்த செயலுக்கு இணைய இணைப்பு தேவை.';
 }

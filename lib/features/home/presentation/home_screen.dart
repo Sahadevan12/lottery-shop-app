@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/connectivity_service.dart';
 import '../../../core/supabase/rpc_error_mapper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -51,6 +52,7 @@ class HomeScreen extends ConsumerWidget {
     final AppColors colors = context.colors;
     final ShopProfile? shop = ref.watch(authControllerProvider).shop;
     final HomeState homeState = ref.watch(homeControllerProvider);
+    final bool isOnline = ref.watch(isOnlineProvider);
     final DashboardTodayData? dashboard = homeState.dashboard;
     final SellersState sellersState = ref.watch(sellersControllerProvider);
 
@@ -101,6 +103,15 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.xl),
+
+            if (!isOnline || homeState.isFromCache) ...<Widget>[
+              OfflineBanner(
+                cachedAt: homeState.cachedAt,
+                onRetry: () =>
+                    ref.read(homeControllerProvider.notifier).refresh(),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
 
             if (dashboard == null) ...<Widget>[
               if (homeState.isLoading)
@@ -288,7 +299,7 @@ class HomeScreen extends ConsumerWidget {
                       label: l10n.giveTicketsShortAction,
                       variant: AppButtonVariant.secondary,
                       leadingIcon: Icons.confirmation_number_outlined,
-                      onPressed: sellersState.activeSellers.isNotEmpty
+                      onPressed: isOnline && sellersState.activeSellers.isNotEmpty
                           ? () => GiveTicketsSheet.show(context: context)
                           : null,
                     ),
@@ -299,12 +310,20 @@ class HomeScreen extends ConsumerWidget {
                       label: l10n.recordPaymentShortAction,
                       variant: AppButtonVariant.secondary,
                       leadingIcon: Icons.payments_outlined,
-                      onPressed: () =>
-                          RecordPaymentSheet.show(context: context),
+                      onPressed: isOnline
+                          ? () => RecordPaymentSheet.show(context: context)
+                          : null,
                     ),
                   ),
                 ],
               ),
+              if (!isOnline) ...<Widget>[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  l10n.offlineWriteDisabledMessage,
+                  style: context.text.caption.copyWith(color: colors.inkMuted),
+                ),
+              ],
               const SizedBox(height: AppSpacing.md),
             ],
             AppButton(

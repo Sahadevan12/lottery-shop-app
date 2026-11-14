@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/cache/app_cache_db.dart';
+import '../../settings/presentation/app_preferences_controller.dart';
 import '../data/auth_repository.dart';
 import '../domain/shop_profile.dart';
 
@@ -127,9 +129,31 @@ class AuthController extends Notifier<AuthState> {
     }
   }
 
+  static const Set<String> _preservedDevicePrefKeys = <String>{
+    'pref_locale',
+    'pref_theme',
+    'pref_large_text',
+    'pref_picked_language',
+    'pref_seen_welcome',
+  };
+
+  Future<void> clearLocalSessionData() async {
+    await ref.read(appCacheDbProvider).clearAll();
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (prefs != null) {
+      final List<String> keys = prefs.getKeys().toList(growable: false);
+      for (final String key in keys) {
+        if (!_preservedDevicePrefKeys.contains(key)) {
+          await prefs.remove(key);
+        }
+      }
+    }
+  }
+
   Future<void> signOut() async {
     final AuthRepository repo = ref.read(authRepositoryProvider);
     await repo.signOut();
+    await clearLocalSessionData();
     state = const AuthState(
       stage: AuthStage.unauthenticated,
     );

@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/cache/cache_codecs.dart';
+import '../../../core/cache/cached_fetch.dart';
 import '../../../core/supabase/supabase_config.dart';
 import '../../settings/presentation/app_preferences_controller.dart';
 import '../data/stock_repository.dart';
@@ -20,6 +22,8 @@ class StockState {
     this.isSubmitting = false,
     this.errorMessage,
     this.lastCostPerTicketPaise = 3500,
+    this.cachedAt,
+    this.isFromCache = false,
   });
 
   final List<LotteryItem> lotteries;
@@ -31,6 +35,8 @@ class StockState {
   final bool isSubmitting;
   final String? errorMessage;
   final int lastCostPerTicketPaise;
+  final DateTime? cachedAt;
+  final bool isFromCache;
 
   LotteryDraw? get selectedDraw {
     if (selectedDrawId == null) {
@@ -85,6 +91,9 @@ class StockState {
     String? errorMessage,
     bool clearError = false,
     int? lastCostPerTicketPaise,
+    DateTime? cachedAt,
+    bool clearCachedAt = false,
+    bool? isFromCache,
   }) {
     return StockState(
       lotteries: lotteries ?? this.lotteries,
@@ -98,6 +107,8 @@ class StockState {
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       lastCostPerTicketPaise:
           lastCostPerTicketPaise ?? this.lastCostPerTicketPaise,
+      cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
+      isFromCache: isFromCache ?? this.isFromCache,
     );
   }
 }
@@ -134,35 +145,98 @@ class StockController extends Notifier<StockState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final StockRepository repo = ref.read(stockRepositoryProvider);
-      final List<LotteryItem> lotteries = await repo.fetchLotteries();
-      final List<PrizeTemplate> templates = await repo.fetchPrizeTemplates();
-      final List<LotteryDraw> draws = await repo.fetchDraws();
+      final CachedFetchResult<_StockInitialPayload> res =
+          await CachedFetch.run<_StockInitialPayload>(
+        ref: ref,
+        cacheKey: 'stock_initial',
+        remoteFetch: () async {
+          final List<LotteryItem> lotteries = await repo.fetchLotteries();
+          final List<PrizeTemplate> templates = await repo.fetchPrizeTemplates();
+          final List<LotteryDraw> draws = await repo.fetchDraws();
 
-      final DateTime today = DateTime.now();
-      LotteryDraw? initialDraw;
-      for (final LotteryDraw d in draws) {
-        if (d.isSameDay(today)) {
-          initialDraw = d;
-          break;
-        }
-      }
-      initialDraw ??= draws.isNotEmpty ? draws.first : null;
+          final DateTime today = DateTime.now();
+          LotteryDraw? initialDraw;
+          for (final LotteryDraw d in draws) {
+            if (d.isSameDay(today)) {
+              initialDraw = d;
+              break;
+            }
+          }
+          initialDraw ??= draws.isNotEmpty ? draws.first : null;
 
-      final Map<String, List<StockBatch>> batchesMap =
-          <String, List<StockBatch>>{...state.batchesByDraw};
-      if (initialDraw != null) {
-        batchesMap[initialDraw.id] =
-            await repo.fetchBatchesForDraw(initialDraw.id);
-      }
+          final Map<String, List<StockBatch>> batchesMap =
+              <String, List<StockBatch>>{};
+          if (initialDraw != null) {
+            batchesMap[initialDraw.id] =
+                await repo.fetchBatchesForDraw(initialDraw.id);
+          }
 
+          return _StockInitialPayload(
+            lotteries: lotteries,
+            templates: templates,
+            draws: draws,
+            selectedDrawId: initialDraw?.id,
+            batchesByDraw: batchesMap,
+          );
+        },
+        toJson: (_StockInitialPayload p) => <String, dynamic>{
+          'lotteries': p.lotteries.map(CacheCodecs.lotteryToJson).toList(),
+          'templates': p.templates.map(CacheCodecs.templateToJson).toList(),
+          'draws': p.draws.map(CacheCodecs.drawToJson).toList(),
+          'selected_draw_id': p.selectedDrawId,
+          'batches_by_draw': p.batchesByDraw.map(
+            (String k, List<StockBatch> v) => MapEntry<String, dynamic>(
+              k,
+              v.map(CacheCodecs.batchToJson).toList(),
+            ),
+          ),
+        },
+        fromJson: (Object raw) {
+          final Map<String, dynamic> map =
+              Map<String, dynamic>.from(raw as Map);
+          final Map<String, dynamic> rawBatches =
+              Map<String, dynamic>.from(map['batches_by_draw'] as Map? ?? <dynamic, dynamic>{});
+          return _StockInitialPayload(
+            lotteries: (map['lotteries'] as List<dynamic>? ?? <dynamic>[])
+                .map((dynamic e) => LotteryItem.fromJson(
+                    Map<String, dynamic>.from(e as Map)))
+                .toList(growable: false),
+            templates: (map['templates'] as List<dynamic>? ?? <dynamic>[])
+                .map((dynamic e) => CacheCodecs.templateFromJson(
+                    Map<String, dynamic>.from(e as Map)))
+                .toList(growable: false),
+            draws: (map['draws'] as List<dynamic>? ?? <dynamic>[])
+                .map((dynamic e) => CacheCodecs.drawFromJson(
+                    Map<String, dynamic>.from(e as Map)))
+                .toList(growable: false),
+            selectedDrawId: map['selected_draw_id'] as String?,
+            batchesByDraw: rawBatches.map(
+              (String k, dynamic v) => MapEntry<String, List<StockBatch>>(
+                k,
+                (v as List<dynamic>)
+                    .map((dynamic e) => CacheCodecs.batchFromJson(
+                        Map<String, dynamic>.from(e as Map)))
+                    .toList(growable: false),
+              ),
+            ),
+          );
+        },
+      );
+
+      final _StockInitialPayload data = res.data;
       state = state.copyWith(
-        lotteries: lotteries,
-        templates: templates,
-        draws: draws,
-        selectedDrawId: initialDraw?.id,
-        clearSelectedDraw: initialDraw == null,
-        batchesByDraw: batchesMap,
+        lotteries: data.lotteries,
+        templates: data.templates,
+        draws: data.draws,
+        selectedDrawId: data.selectedDrawId,
+        clearSelectedDraw: data.selectedDrawId == null,
+        batchesByDraw: <String, List<StockBatch>>{
+          ...state.batchesByDraw,
+          ...data.batchesByDraw,
+        },
         isLoading: false,
+        cachedAt: res.cachedAt,
+        isFromCache: res.isFromCache,
       );
     } catch (err) {
       state = state.copyWith(
@@ -180,12 +254,25 @@ class StockController extends Notifier<StockState> {
     state = state.copyWith(selectedDrawId: drawId, clearError: true);
     try {
       final StockRepository repo = ref.read(stockRepositoryProvider);
-      final List<StockBatch> batches = await repo.fetchBatchesForDraw(drawId);
+      final CachedFetchResult<List<StockBatch>> res =
+          await CachedFetch.run<List<StockBatch>>(
+        ref: ref,
+        cacheKey: 'stock_batches_$drawId',
+        remoteFetch: () => repo.fetchBatchesForDraw(drawId),
+        toJson: (List<StockBatch> list) =>
+            list.map(CacheCodecs.batchToJson).toList(),
+        fromJson: (Object raw) => (raw as List<dynamic>)
+            .map((dynamic e) =>
+                CacheCodecs.batchFromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(growable: false),
+      );
       state = state.copyWith(
         batchesByDraw: <String, List<StockBatch>>{
           ...state.batchesByDraw,
-          drawId: batches,
+          drawId: res.data,
         },
+        cachedAt: res.cachedAt,
+        isFromCache: res.isFromCache,
       );
     } catch (err) {
       state = state.copyWith(errorMessage: err.toString());
@@ -384,4 +471,20 @@ class StockController extends Notifier<StockState> {
       return null;
     }
   }
+}
+
+class _StockInitialPayload {
+  const _StockInitialPayload({
+    required this.lotteries,
+    required this.templates,
+    required this.draws,
+    required this.selectedDrawId,
+    required this.batchesByDraw,
+  });
+
+  final List<LotteryItem> lotteries;
+  final List<PrizeTemplate> templates;
+  final List<LotteryDraw> draws;
+  final String? selectedDrawId;
+  final Map<String, List<StockBatch>> batchesByDraw;
 }

@@ -1195,4 +1195,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get posterShareNowAction => 'Share 1080×1350 PNG';
+
+  @override
+  String offlineBannerWithTime(String time) {
+    return 'Offline — showing data from $time';
+  }
+
+  @override
+  String get offlineBannerNoTime => 'Offline — showing cached data';
+
+  @override
+  String get offlineWriteDisabledMessage =>
+      'Internet connection required for this action.';
 }

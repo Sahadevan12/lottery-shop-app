@@ -363,5 +363,8 @@
   "posterTemplateFestive": "ഫെസ്റ്റിവ് ബാനർ",
   "posterLanguageLabel": "പോസ്റ്റർ ഭാഷ",
   "posterMaskNumbersLabel": "ടിക്കറ്റ് നമ്പർ മറയ്ക്കുക (ഉദാ. KR 48****)",
-  "posterShareNowAction": "1080×1350 PNG ഷെയർ ചെയ്യുക"
+  "posterShareNowAction": "1080×1350 PNG ഷെയർ ചെയ്യുക",
+  "offlineBannerWithTime": "ഓഫ്‌ലൈൻ — {time} മുതലുള്ള വിവരങ്ങൾ",
+  "offlineBannerNoTime": "ഓഫ്‌ലൈൻ — സേവ് ചെയ്ത വിവരങ്ങൾ",
+  "offlineWriteDisabledMessage": "ഈ പ്രവൃത്തിക്ക് ഇന്റർനെറ്റ് കണക്ഷൻ ആവശ്യമാണ്."
 }

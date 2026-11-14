@@ -1198,4 +1198,16 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get posterShareNowAction => '1080×1350 PNG ഷെയർ ചെയ്യുക';
+
+  @override
+  String offlineBannerWithTime(String time) {
+    return 'ഓഫ്‌ലൈൻ — $time മുതലുള്ള വിവരങ്ങൾ';
+  }
+
+  @override
+  String get offlineBannerNoTime => 'ഓഫ്‌ലൈൻ — സേവ് ചെയ്ത വിവരങ്ങൾ';
+
+  @override
+  String get offlineWriteDisabledMessage =>
+      'ഈ പ്രവൃത്തിക്ക് ഇന്റർനെറ്റ് കണക്ഷൻ ആവശ്യമാണ്.';
 }

@@ -7,6 +7,7 @@ export 'app_text_field.dart';
 export 'confirm_dialog.dart';
 export 'empty_state.dart';
 export 'money_text.dart';
+export 'offline_banner.dart';
 export 'section_header.dart';
 export 'seller_avatar.dart';
 export 'skeleton_loader.dart';

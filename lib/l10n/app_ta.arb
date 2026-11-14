@@ -363,5 +363,8 @@
   "posterTemplateFestive": "விழா பேனர்",
   "posterLanguageLabel": "போஸ்டர் மொழி",
   "posterMaskNumbersLabel": "டிக்கெட் எண்ணை மறை (எ.கா. KR 48****)",
-  "posterShareNowAction": "1080×1350 PNG பகிர்"
+  "posterShareNowAction": "1080×1350 PNG பகிர்",
+  "offlineBannerWithTime": "ஆஃப்லைன் — {time} தரவு காட்டப்படுகிறது",
+  "offlineBannerNoTime": "ஆஃப்லைன் — சேமித்த தரவு காட்டப்படுகிறது",
+  "offlineWriteDisabledMessage": "இந்த செயலுக்கு இணைய இணைப்பு தேவை."
 }

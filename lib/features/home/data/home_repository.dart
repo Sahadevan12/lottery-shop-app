@@ -34,6 +34,22 @@ class DashboardTodayData {
 
   int get soldCount => soldCounterCount + soldSellerCount;
 
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'today_date': todayDate.toIso8601String(),
+        'draws_count': drawsCount,
+        'in_stock_count': inStockCount,
+        'with_seller_count': withSellerCount,
+        'sold_counter_count': soldCounterCount,
+        'sold_seller_count': soldSellerCount,
+        'returned_count': returnedCount,
+        'total_tickets': totalTickets,
+        'today_wins_count': todayWinsCount,
+        'today_prizes_total': todayPrizesTotal,
+        'unclaimed_wins_count': unclaimedWinsCount,
+        'total_due_from_sellers': totalDueFromSellers,
+        'to_recover_from_office': toRecoverFromOffice,
+      };
+
   factory DashboardTodayData.fromJson(Map<String, dynamic> json) {
     return DashboardTodayData(
       todayDate: DateTime.tryParse(json['today_date']?.toString() ?? '') ??

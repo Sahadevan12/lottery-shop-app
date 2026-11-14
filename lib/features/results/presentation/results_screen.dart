@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/connectivity_service.dart';
 import '../../../core/supabase/rpc_error_mapper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -90,6 +91,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
     final AppColors colors = context.colors;
     final StockState stockState = ref.watch(stockControllerProvider);
     final ResultsState resultsState = ref.watch(resultsControllerProvider);
+    final bool isOnline = ref.watch(isOnlineProvider);
 
     final List<LotteryDraw> draws = stockState.draws;
     LotteryDraw? selectedDraw;
@@ -137,6 +139,15 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                   AppSpacing.xxl,
                 ),
                 children: <Widget>[
+                  if (!isOnline || resultsState.isFromCache) ...<Widget>[
+                    OfflineBanner(
+                      cachedAt: resultsState.cachedAt,
+                      onRetry: () => ref
+                          .read(resultsControllerProvider.notifier)
+                          .loadDraw(selectedDraw!.id),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
                   SizedBox(
                     height: AppSpacing.minTouchTarget,
                     child: ListView(
@@ -220,19 +231,23 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
     final List<WinningTicket> wins = resultsState.winsFor(draw.id);
     final DrawSummaryRecord? summary = resultsState.summaryFor(draw.id);
 
+    final bool isOnline = ref.watch(isOnlineProvider);
+
     if (draw.status == DrawStatus.upcoming) {
       return AppCard(
         child: EmptyState(
           title: l10n.resultsNotEnteredTitle,
           message: l10n.resultsNotEnteredSubtitle,
           icon: Icons.fact_check_outlined,
-          actionLabel: l10n.enterResultsTitle,
-          onAction: () => EnterResultsSheet.show(
-            context: context,
-            draw: draw,
-            tiers: tiers,
-            existingResults: existingResults,
-          ),
+          actionLabel: isOnline ? l10n.enterResultsTitle : null,
+          onAction: isOnline
+              ? () => EnterResultsSheet.show(
+                    context: context,
+                    draw: draw,
+                    tiers: tiers,
+                    existingResults: existingResults,
+                  )
+              : null,
         ),
       );
     }
@@ -247,12 +262,14 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                 child: AppButton(
                   label: l10n.editResultsTitle,
                   variant: AppButtonVariant.secondary,
-                  onPressed: () => EnterResultsSheet.show(
-                    context: context,
-                    draw: draw,
-                    tiers: tiers,
-                    existingResults: existingResults,
-                  ),
+                  onPressed: isOnline
+                      ? () => EnterResultsSheet.show(
+                            context: context,
+                            draw: draw,
+                            tiers: tiers,
+                            existingResults: existingResults,
+                          )
+                      : null,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -260,13 +277,21 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                 child: AppButton(
                   label: l10n.closeDrawAction,
                   isLoading: resultsState.isSubmitting,
-                  onPressed: resultsState.isSubmitting
+                  onPressed: (!isOnline || resultsState.isSubmitting)
                       ? null
                       : () => _confirmCloseDraw(draw, l10n),
                 ),
               ),
             ],
           ),
+          if (!isOnline) ...<Widget>[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              l10n.offlineWriteDisabledMessage,
+              textAlign: TextAlign.center,
+              style: context.text.caption.copyWith(color: colors.inkMuted),
+            ),
+          ],
           const SizedBox(height: AppSpacing.md),
         ],
         if (summary != null) ...<Widget>[
@@ -278,6 +303,14 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
           wins: wins,
           isClosed: draw.status == DrawStatus.closed,
           onChangeClaimStatus: (WinningTicket win, WinClaimStatus status) async {
+            if (!isOnline) {
+              AppSnackbar.show(
+                context,
+                message: l10n.offlineWriteDisabledMessage,
+                isError: true,
+              );
+              return;
+            }
             final bool ok = await ref
                 .read(resultsControllerProvider.notifier)
                 .updateWinClaimStatus(
