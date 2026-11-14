@@ -12,3 +12,6 @@ env.json
 # Supabase CLI local temp/link state
 supabase/.temp/
 supabase/.branches/
+
+# Android / Kotlin build temp logs
+android/.kotlin/

@@ -1,0 +1,70 @@
+name: Weekly Encrypted Database Backup
+
+on:
+  schedule:
+    # Runs every Sunday at 02:00 UTC (07:30 AM IST)
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: Dump, Compress, Encrypt & Upload Backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Verify required secrets
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::Missing SUPABASE_DB_URL repository secret."
+            exit 1
+          fi
+          if [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::error::Missing BACKUP_PASSPHRASE repository secret."
+            exit 1
+          fi
+
+      - name: Install PostgreSQL 15 client & GnuPG
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client gnupg gzip
+
+      - name: Create encrypted backup archive
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
+          RAW_FILE="luckyledger_${TIMESTAMP}.sql.gz"
+          ENC_FILE="${RAW_FILE}.gpg"
+
+          pg_dump "$SUPABASE_DB_URL" \
+            --schema=public \
+            --no-owner \
+            --no-privileges \
+            --clean \
+            --if-exists \
+            | gzip -9 > "$RAW_FILE"
+
+          gpg --batch --yes \
+            --passphrase-fd 3 \
+            --symmetric \
+            --cipher-algo AES256 \
+            --output "$ENC_FILE" \
+            "$RAW_FILE" 3<<< "$BACKUP_PASSPHRASE"
+
+          rm -f "$RAW_FILE"
+          echo "ENC_FILE=$ENC_FILE" >> "$GITHUB_ENV"
+          ls -lh "$ENC_FILE"
+
+      - name: Upload encrypted backup artifact (90-day retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: luckyledger-db-backup-${{ github.run_number }}
+          path: ${{ env.ENC_FILE }}
+          retention-days: 90
+          if-no-files-found: error
