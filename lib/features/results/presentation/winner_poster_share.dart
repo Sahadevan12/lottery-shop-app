@@ -260,9 +260,12 @@ abstract final class WinnerPosterShare {
     );
     await file.writeAsBytes(imageBytes, flush: true);
 
-    await Share.shareXFiles(
-      <XFile>[XFile(file.path)],
-      text: '${draw.lotteryName} (${draw.drawNumber}) - ${l10n.winnerPosterTitle}',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: <XFile>[XFile(file.path)],
+        text:
+            '${draw.lotteryName} (${draw.drawNumber}) - ${l10n.winnerPosterTitle}',
+      ),
     );
   }
 }
