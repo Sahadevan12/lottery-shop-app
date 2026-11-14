@@ -1,0 +1,88 @@
+name: Build Release APKs & Play Store AAB
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-release:
+    name: Build Split-per-ABI APKs & Play Store AAB
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter (stable)
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Configure release upload keystore (if secrets are configured)
+        env:
+          UPLOAD_KEYSTORE_BASE64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
+          KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+        run: |
+          if [ -n "$UPLOAD_KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_STORE_PASSWORD" ] && [ -n "$KEYSTORE_KEY_PASSWORD" ] && [ -n "$KEYSTORE_KEY_ALIAS" ]; then
+            echo "$UPLOAD_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+            printf "storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=upload-keystore.jks\n" \
+              "$KEYSTORE_STORE_PASSWORD" \
+              "$KEYSTORE_KEY_PASSWORD" \
+              "$KEYSTORE_KEY_ALIAS" > android/key.properties
+            echo "Configured release signing from GitHub Secrets."
+          else
+            echo "::notice::Release keystore secrets not set; building with fallback debug signing config."
+          fi
+
+      - name: Build split-per-ABI Release APKs (for phone testing)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          flutter build apk --release --split-per-abi \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+          ls -lh build/app/outputs/flutter-apk/app-*-release.apk
+
+      - name: Build Release App Bundle (.aab for Google Play Store)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          flutter build appbundle --release \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+          ls -lh build/app/outputs/bundle/release/app-release.aab
+
+      - name: Clean up temporary keystore files
+        if: always()
+        run: |
+          rm -f android/key.properties android/app/upload-keystore.jks
+
+      - name: Upload Split-per-ABI Release APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: luckyledger-release-apks-${{ github.run_number }}
+          path: build/app/outputs/flutter-apk/app-*-release.apk
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Upload Play Store App Bundle (.aab)
+        uses: actions/upload-artifact@v4
+        with:
+          name: luckyledger-release-aab-${{ github.run_number }}
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+          if-no-files-found: error

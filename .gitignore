@@ -13,5 +13,10 @@ env.json
 supabase/.temp/
 supabase/.branches/
 
-# Android / Kotlin build temp logs
+# Android / Kotlin build temp logs & release signing credentials (never commit!)
 android/.kotlin/
+android/key.properties
+android/app/upload-keystore.jks
+android/app/google-services.json
+*.jks
+*.keystore
